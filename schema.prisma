@@ -1,0 +1,294 @@
+// LeadScale B2B Platform - Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgTier {
+  FREE_TRIAL        @map("free_trial")
+  STARTER           @map("starter")
+  PRO_GROWTH        @map("pro_growth")
+  AGENCY_UNLIMITED  @map("agency_unlimited")
+  ENTERPRISE        @map("enterprise")
+}
+
+enum WorkspaceType {
+  AGENCY_PARENT @map("agency_parent")
+  CLIENT_CHILD  @map("client_child")
+  STANDALONE    @map("standalone")
+}
+
+enum UserRole {
+  SUPER_ADMIN     @map("super_admin")
+  AGENCY_OWNER    @map("agency_owner")
+  WORKSPACE_ADMIN @map("workspace_admin")
+  MEMBER          @map("member")
+  READ_ONLY       @map("read_only")
+}
+
+enum EmailStatus {
+  UNVERIFIED            @map("unverified")
+  GUARANTEED_DELIVERABLE @map("guaranteed_deliverable")
+  DELIVERABLE_CATCH_ALL  @map("deliverable_catch_all")
+  RISKY                 @map("risky")
+  INVALID               @map("invalid")
+  PENDING               @map("pending")
+}
+
+enum PhoneType {
+  MOBILE      @map("mobile")
+  DIRECT_DIAL @map("direct_dial")
+  SWITCHBOARD @map("switchboard")
+  UNKNOWN     @map("unknown")
+}
+
+enum CreditTxType {
+  MONTHLY_GRANT         @map("monthly_grant")
+  TOPUP_PURCHASE        @map("topup_purchase")
+  ENRICHMENT_DEDUCTION  @map("enrichment_deduction")
+  VERIFICATION_DEDUCTION @map("verification_deduction")
+  BOUNCE_REFUND         @map("bounce_refund")
+  AGENCY_CHILD_TRANSFER @map("agency_child_transfer")
+  ROLLOVER_EXPIRE       @map("rollover_expire")
+}
+
+enum CampaignStatus {
+  DRAFT     @map("draft")
+  ACTIVE    @map("active")
+  PAUSED    @map("paused")
+  COMPLETED @map("completed")
+  ARCHIVED  @map("archived")
+}
+
+model Organization {
+  id                   String      @id @default(uuid()) @db.Uuid
+  name                 String      @db.VarChar(255)
+  slug                 String      @unique @db.VarChar(255)
+  tier                 OrgTier     @default(STARTER)
+  stripeCustomerId     String?     @unique @map("stripe_customer_id") @db.VarChar(255)
+  stripeSubscriptionId String?     @map("stripe_subscription_id") @db.VarChar(255)
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+  workspaces           Workspace[]
+
+  @@map("organizations")
+}
+
+model Workspace {
+  id                  String            @id @default(uuid()) @db.Uuid
+  organizationId      String            @map("organization_id") @db.Uuid
+  parentWorkspaceId   String?           @map("parent_workspace_id") @db.Uuid
+  name                String            @db.VarChar(255)
+  type                WorkspaceType     @default(STANDALONE)
+  monthlyCreditQuota  Int               @default(1000) @map("monthly_credit_quota")
+  creditBalance       Int               @default(1000) @map("credit_balance")
+  createdAt           DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parentWorkspace     Workspace?        @relation("WorkspaceHierarchy", fields: [parentWorkspaceId], references: [id], onDelete: SetNull)
+  childWorkspaces     Workspace[]       @relation("WorkspaceHierarchy")
+  members             WorkspaceMember[]
+  apiKeys             ApiKey[]
+  creditLedger        CreditLedger[]
+  campaigns           Campaign[]
+
+  @@map("workspaces")
+}
+
+model User {
+  id           String            @id @default(uuid()) @db.Uuid
+  email        String            @unique @db.VarChar(255)
+  passwordHash String            @map("password_hash") @db.VarChar(255)
+  fullName     String            @map("full_name") @db.VarChar(255)
+  avatarUrl    String?           @map("avatar_url")
+  isActive     Boolean           @default(true) @map("is_active")
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+  memberships  WorkspaceMember[]
+  creditLedger CreditLedger[]
+
+  @@map("users")
+}
+
+model WorkspaceMember {
+  id          String    @id @default(uuid()) @db.Uuid
+  workspaceId String    @map("workspace_id") @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  role        UserRole  @default(MEMBER)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+model ApiKey {
+  id           String    @id @default(uuid()) @db.Uuid
+  workspaceId  String    @map("workspace_id") @db.Uuid
+  name         String    @db.VarChar(255)
+  keyPrefix    String    @map("key_prefix") @db.VarChar(16)
+  keyHash      String    @unique @map("key_hash") @db.VarChar(255)
+  isMcpEnabled Boolean   @default(false) @map("is_mcp_enabled")
+  lastUsedAt   DateTime? @map("last_used_at") @db.Timestamptz
+  expiresAt    DateTime? @map("expires_at") @db.Timestamptz
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}
+
+model AiProvider {
+  id                   String        @id @default(uuid()) @db.Uuid
+  name                 String        @unique @db.VarChar(100)
+  baseUrl              String        @map("base_url")
+  apiKeyEncrypted      String        @map("api_key_encrypted")
+  isActive             Boolean       @default(true) @map("is_active")
+  priorityOrder        Int           @default(10) @map("priority_order")
+  costPer1kInputTokens  Decimal       @default(0.000000) @map("cost_per_1k_input_tokens") @db.Decimal(8, 6)
+  costPer1kOutputTokens Decimal       @default(0.000000) @map("cost_per_1k_output_tokens") @db.Decimal(8, 6)
+  rateLimitRpm         Int           @default(30) @map("rate_limit_rpm")
+  rateLimitTpm         Int           @default(100000) @map("rate_limit_tpm")
+  createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  usageLogs            AiUsageLog[]
+
+  @@map("ai_providers")
+}
+
+model AiUsageLog {
+  id               String      @id @default(uuid()) @db.Uuid
+  providerId       String?     @map("provider_id") @db.Uuid
+  taskType         String      @map("task_type") @db.VarChar(100)
+  promptTokens     Int         @default(0) @map("prompt_tokens")
+  completionTokens Int         @default(0) @map("completion_tokens")
+  latencyMs        Int         @map("latency_ms")
+  isSuccess        Boolean     @default(true) @map("is_success")
+  errorMessage     String?     @map("error_message")
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  provider         AiProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+
+  @@map("ai_usage_logs")
+}
+
+model Company {
+  id             String    @id @default(uuid()) @db.Uuid
+  domain         String    @unique @db.VarChar(255)
+  name           String    @db.VarChar(255)
+  employeeCount  Int?      @map("employee_count")
+  employeeRange  String?   @map("employee_range") @db.VarChar(50)
+  industry       String?   @db.VarChar(255)
+  revenueRange   String?   @map("revenue_range") @db.VarChar(100)
+  city           String?   @db.VarChar(100)
+  state          String?   @db.VarChar(100)
+  country        String?   @db.VarChar(100)
+  linkedinUrl    String?   @map("linkedin_url")
+  technographics Json?     @default("[]")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  contacts       Contact[]
+
+  @@map("companies")
+}
+
+model Contact {
+  id              String            @id @default(uuid()) @db.Uuid
+  companyId       String?           @map("company_id") @db.Uuid
+  firstName       String            @map("first_name") @db.VarChar(100)
+  lastName        String            @map("last_name") @db.VarChar(100)
+  jobTitle        String            @map("job_title") @db.VarChar(255)
+  seniority       String?           @db.VarChar(50)
+  department      String?           @db.VarChar(100)
+  email           String?           @db.VarChar(255)
+  emailStatus     EmailStatus       @default(UNVERIFIED) @map("email_status")
+  confidenceScore Decimal           @default(0.00) @map("confidence_score") @db.Decimal(5, 2)
+  phone           String?           @db.VarChar(50)
+  phoneType       PhoneType         @default(UNKNOWN) @map("phone_type")
+  linkedinUrl     String?           @map("linkedin_url")
+  city            String?           @db.VarChar(100)
+  country         String?           @db.VarChar(100)
+  verifiedAt      DateTime?         @map("verified_at") @db.Timestamptz
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  company         Company?          @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  verifications   VerificationLog[]
+  campaignContacts CampaignContact[]
+
+  @@map("contacts")
+}
+
+model VerificationLog {
+  id            String      @id @default(uuid()) @db.Uuid
+  contactId     String?     @map("contact_id") @db.Uuid
+  email         String      @db.VarChar(255)
+  status        EmailStatus
+  mxValid       Boolean     @default(false) @map("mx_valid")
+  smtpCode      String?     @map("smtp_code") @db.VarChar(10)
+  smtpResponse  String?     @map("smtp_response")
+  isCatchAll    Boolean     @default(false) @map("is_catch_all")
+  isDisposable  Boolean     @default(false) @map("is_disposable")
+  providerUsed  String      @map("provider_used") @db.VarChar(100)
+  latencyMs     Int         @map("latency_ms")
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  contact       Contact?    @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@map("verification_logs")
+}
+
+model CreditLedger {
+  id              String       @id @default(uuid()) @db.Uuid
+  workspaceId     String       @map("workspace_id") @db.Uuid
+  userId          String?      @map("user_id") @db.Uuid
+  amount          Int
+  transactionType CreditTxType @map("transaction_type")
+  description     String
+  referenceId     String?      @map("reference_id") @db.VarChar(255)
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  workspace       Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("credit_ledger")
+}
+
+model Campaign {
+  id          String            @id @default(uuid()) @db.Uuid
+  workspaceId String            @map("workspace_id") @db.Uuid
+  name        String            @db.VarChar(255)
+  status      CampaignStatus    @default(DRAFT)
+  targetCount Int               @default(0) @map("target_count")
+  sentCount   Int               @default(0) @map("sent_count")
+  bounceCount Int               @default(0) @map("bounce_count")
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contacts    CampaignContact[]
+
+  @@map("campaigns")
+}
+
+model CampaignContact {
+  id         String   @id @default(uuid()) @db.Uuid
+  campaignId String   @map("campaign_id") @db.Uuid
+  contactId  String   @map("contact_id") @db.Uuid
+  status     String   @default("enrolled") @db.VarChar(50)
+  enrolledAt DateTime @default(now()) @map("enrolled_at") @db.Timestamptz
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, contactId])
+  @@map("campaign_contacts")
+}
