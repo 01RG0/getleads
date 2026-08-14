@@ -31,68 +31,55 @@ const features = [
 
 function WaterfallVisual() {
   return (
-    <svg viewBox="0 0 200 160" className="w-full h-full">
-      {/* Provider cascade */}
-      {[0, 1, 2, 3, 4].map((i) => (
-        <g key={i}>
+    <svg viewBox="0 0 220 180" className="w-full h-full">
+      {/* Provider labels */}
+      {["Cache", "Apollo", "Prospeo", "Findymail", "Hunter"].map((name, i) => (
+        <g key={name}>
+          {/* Provider row */}
           <rect
-            x={40 + i * 8}
-            y={30 + i * 22}
-            width="100"
-            height="16"
-            rx="3"
-            fill="none"
+            x="30"
+            y={20 + i * 30}
+            width="120"
+            height="22"
+            rx="4"
+            fill="currentColor"
+            opacity={i === 3 ? 0.12 : 0.04}
             stroke="currentColor"
-            strokeWidth="1.5"
-            opacity={i < 3 ? 0.25 : 1}
+            strokeWidth={i === 3 ? "1.5" : "1"}
+            strokeOpacity={i === 3 ? 0.8 : 0.2}
           >
             <animate
               attributeName="opacity"
-              values={i === 3 ? "0.4;1;1" : "0.15;0.5;0.15"}
+              values={i === 3 ? "0.06;0.15;0.15" : "0.02;0.06;0.02"}
               dur="3s"
               begin={`${i * 0.4}s`}
               repeatCount="indefinite"
             />
           </rect>
-          {/* X mark for misses, check for hit */}
+          <text x="42" y={35 + i * 30} fontSize="9" fill="currentColor" opacity="0.6" fontFamily="monospace">
+            {name}
+          </text>
+          {/* Status indicator */}
           {i < 3 && (
-            <text
-              x={148 + i * 8}
-              y={42 + i * 22}
-              fontSize="10"
-              fill="currentColor"
-              opacity="0.4"
-            >
-              --
-            </text>
+            <text x="160" y={35 + i * 30} fontSize="11" fill="currentColor" opacity="0.3">✗</text>
           )}
           {i === 3 && (
-            <path
-              d={`M ${146 + i * 8} ${38 + i * 22} l 3 3 l 6 -6`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
-              <animate attributeName="opacity" values="0;1;1" dur="3s" begin="1.2s" repeatCount="indefinite" />
-            </path>
+            <text x="160" y={35 + i * 30} fontSize="11" fill="currentColor" opacity="0.9">
+              ✓
+              <animate attributeName="opacity" values="0;0;1" dur="3s" begin="1.2s" repeatCount="indefinite" />
+            </text>
+          )}
+          {i === 4 && (
+            <text x="160" y={35 + i * 30} fontSize="9" fill="currentColor" opacity="0.2">—</text>
+          )}
+          {/* Connector arrow */}
+          {i < 4 && (
+            <line x1="90" y1={42 + i * 30} x2="90" y2={50 + i * 30} stroke="currentColor" strokeWidth="1" opacity="0.15" strokeDasharray="2 2" />
           )}
         </g>
       ))}
-      {/* Arrow down between rows */}
-      {[0, 1, 2].map((i) => (
-        <line
-          key={`arrow-${i}`}
-          x1={90 + i * 8}
-          y1={46 + i * 22}
-          x2={90 + (i + 1) * 8}
-          y2={50 + (i + 1) * 22}
-          stroke="currentColor"
-          strokeWidth="1"
-          opacity="0.3"
-          strokeDasharray="2 2"
-        />
-      ))}
+      {/* Result label */}
+      <rect x="30" y="172" width="120" height="0" rx="0" fill="none" />
     </svg>
   );
 }
@@ -322,7 +309,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
           {/* Visual */}
           <div className="flex justify-center lg:justify-end">
-            <div className="w-48 h-40 text-foreground">
+            <div className="w-72 h-56 lg:w-80 lg:h-64 text-foreground">
               <AnimatedVisual type={feature.visual} />
             </div>
           </div>

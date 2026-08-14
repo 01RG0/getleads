@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { AnimatedSphere } from "./animated-sphere";
+
+const words = ["seconds", "pipeline", "revenue", "results"];
 
 const stats = [
   { value: "<2%", label: "Bounce rate" },
@@ -13,13 +16,26 @@ const stats = [
 
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
+  const [wordIndex, setWordIndex] = useState(0);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWordIndex((prev) => (prev + 1) % words.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-background">
+      {/* Animated sphere background */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] lg:w-[800px] lg:h-[800px] opacity-40 pointer-events-none">
+        <AnimatedSphere />
+      </div>
+
       {/* Subtle grid lines */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         {[...Array(8)].map((_, i) => (
@@ -62,11 +78,28 @@ export function HeroSection() {
         {/* Main headline */}
         <div className="mb-8">
           <h1
-            className={`text-[clamp(2.5rem,8vw,5.5rem)] font-display leading-[1.05] tracking-tight max-w-4xl transition-all duration-1000 ${
+            className={`text-[clamp(3rem,10vw,8rem)] font-display leading-[0.95] tracking-tight transition-all duration-1000 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
           >
-            Find verified emails for any B2B prospect in seconds
+            <span className="block">Find verified emails</span>
+            <span className="block">
+              in{" "}
+              <span className="relative inline-block">
+                <span key={wordIndex} className="inline-flex">
+                  {words[wordIndex].split("").map((char, i) => (
+                    <span
+                      key={`${wordIndex}-${i}`}
+                      className="inline-block animate-char-in"
+                      style={{ animationDelay: `${i * 50}ms` }}
+                    >
+                      {char}
+                    </span>
+                  ))}
+                </span>
+                <span className="absolute -bottom-2 left-0 right-0 h-3 bg-primary/15" />
+              </span>
+            </span>
           </h1>
         </div>
 
@@ -76,7 +109,7 @@ export function HeroSection() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-          LeadScale queries 15+ data providers in sequence until it finds a match, then verifies every email with 3-stage checks — syntax, SMTP ping, and catch-all detection — guaranteeing less than 2% bounce rates.
+          LeadScale queries 15+ data providers in sequence until it finds a match, then verifies every email with 3-stage checks — guaranteeing less than 2% bounce rates.
         </p>
 
         {/* CTAs */}
@@ -106,24 +139,24 @@ export function HeroSection() {
         </div>
 
         {/* Trust line */}
-        <p
-          className={`text-sm text-muted-foreground mb-16 transition-all duration-700 delay-400 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
-        >
+        <p className="text-sm text-muted-foreground mb-16">
           No credit card required. GDPR & CCPA compliant.
         </p>
 
-        {/* Stats row */}
+        {/* Stats marquee */}
         <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-border transition-all duration-700 delay-500 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          className={`flex gap-16 pt-12 border-t border-border marquee whitespace-nowrap transition-all duration-700 delay-500 ${
+            isVisible ? "opacity-100" : "opacity-0"
           }`}
         >
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col gap-1">
-              <span className="text-3xl lg:text-4xl font-display tracking-tight">{stat.value}</span>
-              <span className="text-sm text-muted-foreground">{stat.label}</span>
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="flex gap-16">
+              {stats.map((stat) => (
+                <div key={`${stat.label}-${i}`} className="flex items-baseline gap-4">
+                  <span className="text-4xl lg:text-5xl font-display">{stat.value}</span>
+                  <span className="text-sm text-muted-foreground">{stat.label}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
