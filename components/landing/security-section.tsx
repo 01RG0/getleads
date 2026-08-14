@@ -61,7 +61,7 @@ function SecurityShieldVisual({ activeFeature }: { activeFeature: number }) {
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-green-500"
+          className="text-[#3D7A4E]"
         >
           <animate attributeName="stroke-dasharray" values="0 60;60 0" dur="1.5s" begin="0.5s" fill="freeze" />
           <animate attributeName="opacity" values="0;0;1" dur="1.5s" begin="0.5s" fill="freeze" />
@@ -77,9 +77,9 @@ function SecurityShieldVisual({ activeFeature }: { activeFeature: number }) {
         </circle>
       </svg>
       {/* Active status */}
-      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-green-50 border border-green-200 px-3 py-1 rounded-full">
-        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-        <span className="text-[10px] font-mono text-green-700 whitespace-nowrap">PROTECTED</span>
+      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-[#3D7A4E]/10 border border-[#3D7A4E]/20 px-3 py-1 rounded-full">
+        <span className="w-2 h-2 rounded-full bg-[#3D7A4E]/100 animate-pulse" />
+        <span className="text-[10px] font-mono text-[#3D7A4E] whitespace-nowrap">PROTECTED</span>
       </div>
     </div>
   );
@@ -105,7 +105,7 @@ function EncryptionVisual() {
                 {[0, 1, 2, 3].map((bar) => (
                   <div
                     key={bar}
-                    className="w-1 bg-green-500 rounded-full"
+                    className="w-1 bg-[#3D7A4E]/100 rounded-full"
                     style={{
                       height: `${8 + bar * 3}px`,
                       animation: `barPulse 1.5s ease-in-out ${i * 0.2 + bar * 0.1}s infinite`,
@@ -113,7 +113,7 @@ function EncryptionVisual() {
                   />
                 ))}
               </div>
-              <span className="text-[10px] font-mono text-green-600">active</span>
+              <span className="text-[10px] font-mono text-[#3D7A4E]">active</span>
             </div>
           </div>
         ))}
@@ -234,7 +234,7 @@ export function SecuritySection() {
                       </div>
                       {/* Active indicator */}
                       {activeFeature === index && (
-                        <div className="shrink-0 w-2 h-2 rounded-full bg-green-500 mt-2 animate-pulse" />
+                        <div className="shrink-0 w-2 h-2 rounded-full bg-[#3D7A4E]/100 mt-2 animate-pulse" />
                       )}
                     </div>
                   </div>

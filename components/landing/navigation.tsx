@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
 const navLinks = [
   { name: "Features", href: "#features" },
@@ -34,7 +35,7 @@ export function Navigation() {
       <nav
         className={`mx-auto transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
           isScrolled || isMobileMenuOpen
-            ? "bg-background/80 backdrop-blur-xl border border-border/60 rounded-full shadow-[0_4px_24px_rgba(28,23,18,0.06)] max-w-[1200px]"
+            ? "bg-background/80 backdrop-blur-xl border border-border/60 rounded-full shadow-[0_4px_24px_rgba(28,23,18,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] max-w-[1200px]"
             : "bg-transparent max-w-[1400px]"
         }`}
       >
@@ -64,6 +65,7 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
             <a href="#" className={`text-muted-foreground hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
               Sign in
             </a>

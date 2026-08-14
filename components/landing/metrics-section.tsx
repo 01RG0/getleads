@@ -156,13 +156,13 @@ export function MetricsSection() {
             return (
               <div
                 key={metric.label}
-                className={`group relative p-8 rounded-xl border border-border bg-white overflow-hidden card-elevated transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/30 hover:-translate-y-2 ${
+                className={`group relative p-8 rounded-xl border border-border bg-card overflow-hidden card-elevated transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/30 hover:-translate-y-2 ${
                   isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
                 }`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 {/* Shimmer effect */}
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-foreground/10 to-transparent pointer-events-none" />
 
                 {/* Top icon */}
                 <div className={`w-10 h-10 rounded-lg ${metric.bgColor} flex items-center justify-center mb-5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>

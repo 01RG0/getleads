@@ -112,8 +112,8 @@ export function InfrastructureSection() {
               <div className="group">
                 <div className="text-4xl lg:text-5xl font-display mb-2 text-primary transition-transform duration-300 group-hover:scale-105">Zero</div>
                 <div className="text-sm text-muted-foreground">Silent drops</div>
-                <div className="mt-2 h-1 bg-green-500/20 rounded-full overflow-hidden">
-                  <div className={`h-full bg-green-500/50 rounded-full transition-all duration-1500 delay-500 ${isVisible ? "w-full" : "w-0"}`} />
+                <div className="mt-2 h-1 bg-[#3D7A4E]/20 rounded-full overflow-hidden">
+                  <div className={`h-full bg-[#3D7A4E]/50 rounded-full transition-all duration-1500 delay-500 ${isVisible ? "w-full" : "w-0"}`} />
                 </div>
               </div>
             </div>
@@ -123,8 +123,8 @@ export function InfrastructureSection() {
             <div className="border border-foreground/10 rounded-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-foreground/10 flex items-center justify-between bg-foreground/[0.01]">
                 <span className="text-sm font-mono text-muted-foreground">Resilience layers</span>
-                <span className="flex items-center gap-2 text-xs font-mono text-green-600">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="flex items-center gap-2 text-xs font-mono text-[#3D7A4E]">
+                  <span className="w-2 h-2 rounded-full bg-[#3D7A4E] animate-pulse" />
                   All systems nominal
                 </span>
               </div>

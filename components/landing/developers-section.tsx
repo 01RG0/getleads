@@ -215,7 +215,7 @@ export function DevelopersSection() {
                   aria-label="Copy code"
                 >
                   {copied ? (
-                    <Check className="w-4 h-4 text-green-600" />
+                    <Check className="w-4 h-4 text-[#3D7A4E]" />
                   ) : (
                     <Copy className="w-4 h-4" />
                   )}

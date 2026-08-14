@@ -16,6 +16,11 @@ export function AnimatedSphere() {
     const chars = "░▒▓█▀▄▌▐│─┤├┴┬╭╮╰╯";
     let time = 0;
 
+    const getColor = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      return isDark ? "255, 255, 255" : "0, 0, 0";
+    };
+
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
@@ -75,9 +80,10 @@ export function AnimatedSphere() {
       points.sort((a, b) => a.z - b.z);
 
       // Draw points
+      const rgb = getColor();
       points.forEach((point) => {
         const alpha = 0.2 + (point.z + 1) * 0.4;
-        ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+        ctx.fillStyle = `rgba(${rgb}, ${alpha})`;
         ctx.fillText(point.char, point.x, point.y);
       });
 

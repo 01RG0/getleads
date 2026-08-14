@@ -117,7 +117,7 @@ export function PricingSection() {
             Annual
           </span>
           {isAnnual && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 border border-green-200 text-green-700 text-xs font-medium rounded-full animate-fadeIn">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#3D7A4E]/10 border border-[#3D7A4E]/20 text-[#3D7A4E] text-xs font-medium rounded-full animate-fadeIn">
               <Sparkles className="w-3 h-3" />
               Save 20%
             </span>
@@ -129,7 +129,7 @@ export function PricingSection() {
           {plans.map((plan, index) => (
             <div
               key={plan.name}
-              className={`relative p-8 lg:p-10 rounded-xl bg-white border card-elevated transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 ${
+              className={`relative p-8 lg:p-10 rounded-xl bg-card border card-elevated transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 ${
                 plan.popular ? "border-primary shadow-lg shadow-primary/10 md:-my-4 md:py-12 lg:py-14" : "border-border hover:border-primary/30"
               } ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
               style={{ transitionDelay: `${index * 100 + 200}ms` }}
@@ -161,7 +161,7 @@ export function PricingSection() {
                     <span className="text-sm text-muted-foreground line-through">
                       ${plan.monthlyPrice}/mo
                     </span>
-                    <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                    <span className="text-xs font-medium text-[#3D7A4E] bg-[#3D7A4E]/10 px-2 py-0.5 rounded">
                       Save ${(plan.monthlyPrice - plan.annualPrice) * 12}/yr
                     </span>
                   </div>
@@ -214,15 +214,15 @@ export function PricingSection() {
           </p>
           <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3D7A4E]/100" />
               No credit card required
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3D7A4E]/100" />
               Cancel anytime
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3D7A4E]/100" />
               100 free credits to start
             </span>
           </div>
