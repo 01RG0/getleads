@@ -20,6 +20,37 @@ const steps = [
   },
 ];
 
+const cardStates = [
+  {
+    label: "INPUT",
+    lines: [
+      { key: "name:", value: "Sarah Chen" },
+      { key: "company:", value: "Acme Corp" },
+    ],
+    status: null,
+  },
+  {
+    label: "PROCESSING",
+    lines: [
+      { key: "provider_1:", value: "Apollo — miss" },
+      { key: "provider_2:", value: "Prospeo — miss" },
+      { key: "provider_3:", value: "Findymail — match!" },
+      { key: "verify:", value: "SMTP ✓  Catch-all ✓  Syntax ✓" },
+    ],
+    status: "verifying",
+  },
+  {
+    label: "OUTPUT",
+    lines: [
+      { key: "email:", value: "s.chen@acmecorp.com" },
+      { key: "phone:", value: "+1 (415) 555-0142" },
+      { key: "title:", value: "VP of Engineering" },
+      { key: "pushed_to:", value: "HubSpot → Sequence #4" },
+    ],
+    status: "verified",
+  },
+];
+
 export function HowItWorksSection() {
   const [activeStep, setActiveStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -43,6 +74,8 @@ export function HowItWorksSection() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const currentCard = cardStates[activeStep];
 
   return (
     <section
@@ -95,7 +128,7 @@ export function HowItWorksSection() {
                 }`}
               >
                 <div className="flex items-start gap-6">
-                  <span className="font-display text-3xl text-background/30">{step.number}</span>
+                  <span className={`font-display text-3xl transition-colors duration-500 ${activeStep === index ? "text-primary" : "text-background/30"}`}>{step.number}</span>
                   <div className="flex-1">
                     <h3 className="text-2xl lg:text-3xl font-display mb-3 group-hover:translate-x-2 transition-transform duration-300">
                       {step.title}
@@ -106,9 +139,9 @@ export function HowItWorksSection() {
 
                     {/* Progress indicator */}
                     {activeStep === index && (
-                      <div className="mt-4 h-px bg-background/20 overflow-hidden">
+                      <div className="mt-4 h-0.5 bg-background/10 overflow-hidden rounded-full">
                         <div
-                          className="h-full bg-primary w-0"
+                          className="h-full bg-primary rounded-full"
                           style={{
                             animation: 'progress 5s linear forwards'
                           }}
@@ -121,48 +154,80 @@ export function HowItWorksSection() {
             ))}
           </div>
 
-          {/* Before/After card */}
+          {/* Dynamic card that changes with steps */}
           <div className="lg:sticky lg:top-32 self-start">
-            <div className="border border-background/10 p-8 lg:p-10 min-h-[320px] flex flex-col justify-between">
-              {/* Input */}
-              <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-background/40">Input</span>
-                <div className="mt-3 p-4 border border-background/10 rounded bg-background/5">
-                  <p className="font-mono text-sm text-background/70">
-                    <span className="text-background/40">name:</span> Sarah Chen
-                  </p>
-                  <p className="font-mono text-sm text-background/70">
-                    <span className="text-background/40">company:</span> Acme Corp
-                  </p>
-                </div>
+            <div className="border border-background/10 p-8 lg:p-10 min-h-[360px] relative overflow-hidden">
+              {/* Animated glow on step change */}
+              <div
+                key={activeStep}
+                className="absolute inset-0 bg-primary/5 opacity-0 animate-pulse-once pointer-events-none"
+              />
+
+              {/* Step indicator dots */}
+              <div className="flex gap-2 mb-6">
+                {steps.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      i === activeStep ? "w-8 bg-primary" : i < activeStep ? "w-3 bg-green-400/60" : "w-3 bg-background/20"
+                    }`}
+                  />
+                ))}
               </div>
 
-              {/* Arrow */}
-              <div className="flex justify-center py-4">
-                <svg width="20" height="24" viewBox="0 0 20 24" fill="none" className="text-background/30">
-                  <path d="M10 0 L10 20 M4 14 L10 20 L16 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+              {/* Card label */}
+              <span className="text-xs font-mono uppercase tracking-widest text-background/40">
+                {currentCard.label}
+              </span>
+
+              {/* Card content - animated */}
+              <div
+                key={`card-${activeStep}`}
+                className="mt-4 p-5 border border-background/10 rounded bg-background/5 space-y-2"
+              >
+                {currentCard.lines.map((line, i) => (
+                  <p
+                    key={`${activeStep}-${i}`}
+                    className="font-mono text-sm text-background/70 opacity-0"
+                    style={{
+                      animation: `fadeSlideIn 0.4s ease-out ${i * 120}ms forwards`
+                    }}
+                  >
+                    <span className="text-background/40">{line.key}</span>{" "}
+                    <span className={line.value.includes("match") ? "text-green-400" : line.value.includes("miss") ? "text-background/40" : ""}>
+                      {line.value}
+                    </span>
+                  </p>
+                ))}
               </div>
 
-              {/* Output */}
-              <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-background/40">Output</span>
-                <div className="mt-3 p-4 border border-background/10 rounded bg-background/5">
-                  <p className="font-mono text-sm text-background/70">
-                    <span className="text-background/40">email:</span> s.chen@acmecorp.com
-                  </p>
-                  <p className="font-mono text-sm text-background/70">
-                    <span className="text-background/40">phone:</span> +1 (415) 555-0142
-                  </p>
-                  <p className="font-mono text-sm text-background/70">
-                    <span className="text-background/40">title:</span> VP of Engineering
-                  </p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-green-400" />
-                    <span className="text-xs font-mono text-green-400/80">Verified</span>
-                  </div>
+              {/* Status indicator */}
+              {currentCard.status && (
+                <div
+                  className="mt-4 flex items-center gap-2 opacity-0"
+                  style={{ animation: "fadeSlideIn 0.4s ease-out 500ms forwards" }}
+                >
+                  {currentCard.status === "verified" && (
+                    <>
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
+                      <span className="text-xs font-mono text-green-400/80">Verified & delivered</span>
+                    </>
+                  )}
+                  {currentCard.status === "verifying" && (
+                    <>
+                      <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+                      <span className="text-xs font-mono text-primary/80">Verifying...</span>
+                    </>
+                  )}
                 </div>
-              </div>
+              )}
+
+              {/* Animated cursor for processing step */}
+              {activeStep === 1 && (
+                <div className="mt-3 flex items-center gap-1 opacity-0" style={{ animation: "fadeSlideIn 0.4s ease-out 600ms forwards" }}>
+                  <div className="w-1.5 h-4 bg-primary/70 animate-blink" />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -172,6 +237,24 @@ export function HowItWorksSection() {
         @keyframes progress {
           from { width: 0%; }
           to { width: 100%; }
+        }
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .animate-blink {
+          animation: blink 0.8s step-end infinite;
+        }
+        .animate-pulse-once {
+          animation: pulseOnce 0.6s ease-out forwards;
+        }
+        @keyframes pulseOnce {
+          0% { opacity: 0.3; }
+          100% { opacity: 0; }
         }
       `}</style>
     </section>
