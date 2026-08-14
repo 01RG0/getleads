@@ -273,7 +273,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        setIsVisible(entry.isIntersecting);
       },
       { threshold: 0.2 }
     );
@@ -326,7 +326,7 @@ export function FeaturesSection() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        setIsVisible(entry.isIntersecting);
       },
       { threshold: 0.1 }
     );

@@ -12,9 +12,9 @@ const metrics = [
     suffix: "%",
     prefix: "<",
     icon: ShieldCheck,
-    color: "text-green-600",
-    bgColor: "bg-green-500/10",
-    barColor: "bg-green-500",
+    color: "text-[#3D7A4E]",
+    bgColor: "bg-[#3D7A4E]/10",
+    barColor: "bg-[#3D7A4E]",
     barWidth: "18%",
   },
   {
@@ -25,9 +25,9 @@ const metrics = [
     suffix: "s",
     prefix: "",
     icon: Zap,
-    color: "text-amber-600",
-    bgColor: "bg-amber-500/10",
-    barColor: "bg-amber-500",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    barColor: "bg-primary",
     barWidth: "85%",
   },
   {
@@ -38,9 +38,9 @@ const metrics = [
     suffix: "+",
     prefix: "",
     icon: Database,
-    color: "text-blue-600",
-    bgColor: "bg-blue-500/10",
-    barColor: "bg-blue-500",
+    color: "text-[#6B6055]",
+    bgColor: "bg-[#6B6055]/10",
+    barColor: "bg-[#6B6055]",
     barWidth: "100%",
   },
   {
@@ -112,7 +112,7 @@ export function MetricsSection() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        setIsVisible(entry.isIntersecting);
       },
       { threshold: 0.15 }
     );
