@@ -1,0 +1,52 @@
+.agentic-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  overflow: hidden;
+  background: #f5f4f1;
+}
+
+.agentic-intro__curtain {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  background: #f5f4f1;
+}
+
+.agentic-intro__letters {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.agentic-intro__word {
+  display: flex;
+  gap: 0.06em;
+}
+
+.agentic-intro__letter {
+  display: inline-block;
+  color: #111;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-size: calc((100vw - 64px) / 7);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  user-select: none;
+  will-change: opacity, filter, transform;
+}
+
+@media (max-width: 640px) {
+  .agentic-intro__letter {
+    font-size: calc((100vw - 32px) / 7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agentic-intro__letter {
+    transition: none !important;
+  }
+}

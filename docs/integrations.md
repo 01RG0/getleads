@@ -23,7 +23,6 @@ graph LR
     subgraph Automation Platforms
         ZAP[Zapier Integration]
         MAKE[Make.com Webhook Apps]
-        n8n[n8n Workflow Nodes]
     end
 
     subgraph AI SDR Agents & LLMs
@@ -38,7 +37,6 @@ graph LR
 
     LS <--> ZAP
     LS <--> MAKE
-    LS <--> n8n
 
     MCP <--> CL
     MCP <--> GPT
