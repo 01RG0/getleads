@@ -121,18 +121,18 @@ export function HeroSection() {
           <Button
             asChild
             size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-14 text-base rounded-full group"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-14 text-base rounded-full group btn-tactile shadow-[0_4px_16px_rgba(166,99,31,0.2)] hover:shadow-[0_8px_24px_rgba(166,99,31,0.3)]"
           >
             <a href="#pricing">
               Start free — 100 contacts included
-              <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-1.5" />
             </a>
           </Button>
           <Button
             asChild
             size="lg"
             variant="outline"
-            className="h-14 px-8 text-base rounded-full border-border hover:bg-primary/5"
+            className="h-14 px-8 text-base rounded-full border-border hover:bg-primary/5 btn-tactile"
           >
             <a href="#how-it-works">See how it works</a>
           </Button>

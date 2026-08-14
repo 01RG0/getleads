@@ -129,7 +129,7 @@ export function PricingSection() {
           {plans.map((plan, index) => (
             <div
               key={plan.name}
-              className={`relative p-8 lg:p-10 rounded-xl bg-white border transition-all duration-700 hover:shadow-xl hover:-translate-y-1 ${
+              className={`relative p-8 lg:p-10 rounded-xl bg-white border card-elevated transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 ${
                 plan.popular ? "border-primary shadow-lg shadow-primary/10 md:-my-4 md:py-12 lg:py-14" : "border-border hover:border-primary/30"
               } ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
               style={{ transitionDelay: `${index * 100 + 200}ms` }}
@@ -192,9 +192,9 @@ export function PricingSection() {
               {/* CTA */}
               <a
                 href={plan.name === "Agency" ? "#cta" : "#pricing"}
-                className={`w-full py-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all duration-300 group ${
+                className={`w-full py-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium btn-tactile group ${
                   plan.popular
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_4px_16px_rgba(166,99,31,0.2)] hover:shadow-[0_8px_24px_rgba(166,99,31,0.3)]"
                     : "border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 }`}
               >

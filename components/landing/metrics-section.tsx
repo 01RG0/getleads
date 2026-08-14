@@ -156,7 +156,7 @@ export function MetricsSection() {
             return (
               <div
                 key={metric.label}
-                className={`group relative p-8 rounded-xl border border-border bg-white overflow-hidden transition-all duration-700 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 ${
+                className={`group relative p-8 rounded-xl border border-border bg-white overflow-hidden card-elevated transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/30 hover:-translate-y-2 ${
                   isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
                 }`}
                 style={{ transitionDelay: `${index * 150}ms` }}

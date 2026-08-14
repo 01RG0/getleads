@@ -25,16 +25,16 @@ export function Navigation() {
 
   return (
     <header
-      className={`fixed z-50 transition-all duration-500 ${
+      className={`fixed z-50 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
         isScrolled
           ? "top-4 left-4 right-4"
           : "top-0 left-0 right-0"
       }`}
     >
       <nav
-        className={`mx-auto transition-all duration-500 ${
+        className={`mx-auto transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
           isScrolled || isMobileMenuOpen
-            ? "bg-background/80 backdrop-blur-xl border border-border rounded-2xl shadow-lg max-w-[1200px]"
+            ? "bg-background/80 backdrop-blur-xl border border-border/60 rounded-full shadow-[0_4px_24px_rgba(28,23,18,0.06)] max-w-[1200px]"
             : "bg-transparent max-w-[1400px]"
         }`}
       >
@@ -70,7 +70,7 @@ export function Navigation() {
             <Button
               asChild
               size="sm"
-              className={`bg-primary hover:bg-primary/90 text-primary-foreground rounded-full transition-all duration-500 ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
+              className={`bg-primary hover:bg-primary/90 text-primary-foreground rounded-full btn-tactile ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
             >
               <a href="#pricing">Start free</a>
             </Button>
