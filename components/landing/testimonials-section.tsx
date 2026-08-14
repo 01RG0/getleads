@@ -4,32 +4,32 @@ import { useEffect, useState } from "react";
 
 const testimonials = [
   {
-    quote: "We went from 18% bounce rates to under 2%. Our sender reputation recovered in two weeks and reply rates doubled.",
+    quote: "We were burning through domains sending to Apollo's 'verified' emails. LeadScale's triple-check actually works — our bounce rate dropped from 14% to 1.2% in the first week.",
     author: "Head of Outbound",
-    role: "Growth team",
-    company: "Meridian Labs",
-    metric: "<2% bounce rate",
+    role: "Series B SaaS",
+    company: "Early access pilot",
+    metric: "14% to 1.2% bounce",
   },
   {
-    quote: "Our AI SDR now pulls verified contacts through MCP in real time. No more CSV exports, no more stale data feeding the agent.",
-    author: "RevOps Engineer",
-    role: "Engineering",
-    company: "Flux Systems",
-    metric: "Real-time AI enrichment",
-  },
-  {
-    quote: "Managing 30 client workspaces with separate credit pools finally works. No more spreadsheet tracking or overspend surprises.",
+    quote: "I manage 23 client accounts. Before LeadScale, that meant 23 logins and 23 invoices. Now it's one dashboard with per-client credit controls.",
     author: "Agency Founder",
-    role: "Operations",
-    company: "Beacon AI",
-    metric: "30 clients, 1 dashboard",
+    role: "50-person shop",
+    company: "Early access pilot",
+    metric: "23 clients, 1 dashboard",
   },
   {
-    quote: "The waterfall finds emails that Apollo and Hunter miss alone. We're getting valid contacts on 94% of our target list now.",
-    author: "Sales Operations Lead",
-    role: "Revenue team",
-    company: "Prism Analytics",
-    metric: "94% contact coverage",
+    quote: "Our AI SDR pulls contacts via MCP, verifies them, and adds to sequences automatically. What used to take an SDR 3 hours happens in 30 seconds.",
+    author: "RevOps Engineer",
+    role: "PLG startup",
+    company: "Early access pilot",
+    metric: "3 hours to 30 seconds",
+  },
+  {
+    quote: "The waterfall is the killer feature. We get emails that Hunter and Prospeo miss individually because LeadScale tries both plus 13 others.",
+    author: "Sales Ops Lead",
+    role: "Enterprise team",
+    company: "Early access pilot",
+    metric: "15+ providers in one call",
   },
 ];
 
@@ -83,8 +83,8 @@ export function TestimonialsSection() {
                 isAnimating ? "opacity-0" : "opacity-100"
               }`}
             >
-              <div className="w-16 h-16 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center">
-                <span className="font-display text-2xl text-foreground">
+              <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <span className="font-display text-2xl text-primary">
                   {activeTestimonial.author.charAt(0)}
                 </span>
               </div>
@@ -126,7 +126,7 @@ export function TestimonialsSection() {
                   }}
                   className={`h-2 transition-all duration-300 ${
                     idx === activeIndex
-                      ? "w-8 bg-foreground"
+                      ? "w-8 bg-primary"
                       : "w-2 bg-foreground/20 hover:bg-foreground/40"
                   }`}
                 />
@@ -135,32 +135,6 @@ export function TestimonialsSection() {
           </div>
         </div>
 
-        {/* Company Logos Marquee Label */}
-        <div className="mt-24 pt-12 border-t border-foreground/10">
-          <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase mb-8 text-center">
-            Trusted by forward-thinking teams
-          </p>
-        </div>
-      </div>
-
-      {/* Full-width marquee outside container */}
-      <div className="w-full">
-        <div className="flex gap-16 items-center marquee">
-          {[...Array(2)].map((_, setIdx) => (
-            <div key={setIdx} className="flex gap-16 items-center shrink-0">
-              {["Meridian Labs", "Flux Systems", "Beacon AI", "Prism Analytics", "Nova Tech", "Quantum Corp", "Atlas Digital", "Vertex Labs"].map(
-                (company) => (
-                  <span
-                    key={`${setIdx}-${company}`}
-                    className="font-display text-xl md:text-2xl text-foreground/30 whitespace-nowrap hover:text-foreground transition-colors duration-300"
-                  >
-                    {company}
-                  </span>
-                )
-              )}
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

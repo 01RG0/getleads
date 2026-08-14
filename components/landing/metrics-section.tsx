@@ -2,70 +2,26 @@
 
 import { useEffect, useState, useRef } from "react";
 
-function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: string; suffix?: string; prefix?: string }) {
-  const [count, setCount] = useState(end);
-  const ref = useRef<HTMLDivElement>(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          const duration = 2000;
-          const startTime = performance.now();
-
-          const animate = (currentTime: number) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            setCount(end);
-
-            if (progress < 1) {
-              requestAnimationFrame(animate);
-            }
-          };
-
-          requestAnimationFrame(animate);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [end, hasAnimated]);
-
-  return (
-    <div ref={ref} className="text-6xl lg:text-8xl font-display tracking-tight">
-      {prefix}{count}{suffix}
-    </div>
-  );
-}
-
 const metrics = [
   {
-    value: "<1.8%",
-    suffix: "",
-    prefix: "",
-    label: "Guaranteed bounce rate",
+    value: "<2%",
+    label: "Bounce rate",
+    description: "Guaranteed. Auto-refund if a verified email bounces within 14 days.",
   },
   {
-    value: "$49",
-    suffix: "/mo",
-    prefix: "",
-    label: "Starting price",
-  },
-  {
-    value: "<1.8s",
-    suffix: "",
-    prefix: "",
-    label: "p95 waterfall latency",
+    value: "1.5s",
+    label: "Average enrichment",
+    description: "Time to enrich a contact through the full waterfall pipeline.",
   },
   {
     value: "15+",
-    suffix: "",
-    prefix: "",
-    label: "Free LLM APIs supported",
+    label: "Providers",
+    description: "Data sources queried in sequence. You get the best result, not just one source.",
+  },
+  {
+    value: "$49/mo",
+    label: "All-in starting price",
+    description: "No per-seat fees, no hidden credit traps.",
   },
 ];
 
@@ -86,47 +42,42 @@ export function MetricsSection() {
   }, []);
 
   return (
-    <section id="studio" ref={sectionRef} className="relative py-24 lg:py-32 border-y border-foreground/10">
+    <section id="metrics" ref={sectionRef} className="relative py-24 lg:py-32 border-y border-border">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16 lg:mb-24">
-          <div>
-            <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
-              <span className="w-8 h-px bg-foreground/30" />
-              Key figures
-            </span>
-            <h2
-              className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-            >
-              Performance you
-              <br />
-              can measure.
-            </h2>
-          </div>
-          <div className="flex items-center gap-3 font-mono text-sm text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            Published figures
-          </div>
+        <div className="max-w-2xl mb-16">
+          <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
+            <span className="w-8 h-px bg-border" />
+            Key figures
+          </span>
+          <h2
+            className={`text-4xl lg:text-5xl font-semibold tracking-tight transition-all duration-700 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            }`}
+          >
+            Performance you can measure.
+          </h2>
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-foreground/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {metrics.map((metric, index) => (
             <div
               key={metric.label}
-              className={`bg-background p-8 lg:p-12 transition-all duration-700 ${
+              className={`p-6 rounded-lg border border-border bg-white transition-all duration-700 ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
               }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <AnimatedCounter
-                end={metric.value}
-                suffix={metric.suffix}
-                prefix={metric.prefix}
-              />
-              <div className="mt-4 text-lg text-muted-foreground">{metric.label}</div>
+              <div className="text-4xl lg:text-5xl font-bold tracking-tight text-primary">
+                {metric.value}
+              </div>
+              <div className="mt-3 text-base font-medium text-foreground">
+                {metric.label}
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                {metric.description}
+              </div>
             </div>
           ))}
         </div>

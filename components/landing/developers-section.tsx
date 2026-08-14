@@ -5,14 +5,6 @@ import { Copy, Check } from "lucide-react";
 
 const codeExamples = [
   {
-    label: "Install",
-    code: `npm install @leadscale/sdk
-
-# or
-yarn add @leadscale/sdk
-pnpm add @leadscale/sdk`,
-  },
-  {
     label: "Enrich",
     code: `import { LeadScale } from '@leadscale/sdk'
 
@@ -22,22 +14,47 @@ const ls = new LeadScale({
 
 const contact = await ls.enrich({
   name: 'Jane Smith',
-  company: 'Acme Corp',
-  linkedin: 'janesmith'
+  company: 'Acme Corp'
 })
-// { email: 'jane@acme.com', verified: true }`,
+
+// {
+//   email: 'jane.smith@acme.com',
+//   phone: '+1-555-0142',
+//   verified: true,
+//   confidence: 0.97
+// }`,
   },
   {
     label: "Search",
     code: `const leads = await ls.search({
-  title: 'VP Sales',
+  title: 'VP of Sales',
   industry: 'SaaS',
   employees: '50-200',
   location: 'US'
 })
 
-// Returns verified contacts with
-// email, phone, company firmographics`,
+// [
+//   { name: 'Sarah Chen', email: 'sarah@...',
+//     title: 'VP Sales', company: 'Acme' },
+//   { name: 'Mike Torres', email: 'mike@...',
+//     title: 'VP Sales', company: 'Nova' },
+//   ...12 more results
+// ]`,
+  },
+  {
+    label: "Verify",
+    code: `const result = await ls.verify({
+  email: 'jane.smith@acme.com'
+})
+
+// {
+//   deliverable: true,
+//   score: 0.98,
+//   risk_flags: [],
+//   mx_valid: true,
+//   smtp_check: 'pass',
+//   catch_all: false
+// }`,
   },
 ];
 
@@ -45,20 +62,20 @@ const mcpContracts = ["search_leads", "enrich_contact", "verify_deliverability",
 
 const features = [
   {
-    title: "TypeScript native",
+    title: "TypeScript SDK",
     description: "Full type safety with auto-generated types for every response."
   },
   {
-    title: "MCP-ready",
-    description: "Connect Claude, ChatGPT, or any agent via Model Context Protocol."
+    title: "MCP native",
+    description: "Connect Claude, ChatGPT, or Copilot via Model Context Protocol."
   },
   {
     title: "Webhook streaming",
     description: "Get enrichment results pushed in real time as providers respond."
   },
   {
-    title: "Batch & single",
-    description: "Enrich one contact or upload 10K — same API, same guarantees."
+    title: "Batch upload",
+    description: "Enrich one contact or upload 10K via CSV — same API, same guarantees."
   },
 ];
 
@@ -130,13 +147,12 @@ export function DevelopersSection() {
               For developers
             </span>
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Built by devs.
+              One API call.
               <br />
-              <span className="text-muted-foreground">For devs.</span>
+              <span className="text-muted-foreground">Verified contact back.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-              Search leads, enrich contacts, and verify emails in a few lines of code.
-              Or connect your AI agent directly via MCP — no CSV exports needed.
+              Search, enrich, and verify B2B contacts programmatically. Connect your AI agent via MCP for fully autonomous prospecting.
             </p>
 
             {/* MCP tool contracts */}
@@ -190,7 +206,7 @@ export function DevelopersSection() {
                   >
                     {example.label}
                     {activeTab === idx && (
-                      <span className="absolute bottom-0 left-0 right-0 h-px bg-foreground" />
+                      <span className="absolute bottom-0 left-0 right-0 h-px bg-primary" />
                     )}
                   </button>
                 ))}
@@ -239,7 +255,7 @@ export function DevelopersSection() {
 
             {/* Links */}
             <div className="mt-6 flex items-center gap-6 text-sm">
-              <a href="#" className="text-foreground hover:underline underline-offset-4">
+              <a href="#" className="text-primary hover:underline underline-offset-4">
                 Read the docs
               </a>
               <span className="text-foreground/20">|</span>

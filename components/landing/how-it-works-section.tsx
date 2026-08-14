@@ -5,18 +5,18 @@ import { useEffect, useRef, useState } from "react";
 const steps = [
   {
     number: "I",
-    title: "Connect your tools",
-    description: "Connect the CRM and tools your team already uses so every lead starts with the right context.",
+    title: "Paste your prospect list",
+    description: "Upload a CSV or send contacts via API. Just name + company is enough — we handle the rest.",
   },
   {
     number: "II",
-    title: "Set your rules",
-    description: "Tell us who you are targeting and how you want each record enriched and verified before it reaches your team.",
+    title: "We find and verify",
+    description: "Our waterfall engine queries providers until it finds a valid email. Then 3-stage verification confirms deliverability in real time.",
   },
   {
     number: "III",
-    title: "Work the right leads",
-    description: "Verified leads flow straight into your CRM or sequence, ready for your team to act on.",
+    title: "Verified contacts land in your tools",
+    description: "Enriched records push directly to your CRM or outreach sequence. Your reps see only verified, ready-to-contact leads.",
   },
 ];
 
@@ -77,7 +77,7 @@ export function HowItWorksSection() {
           >
             Three steps.
             <br />
-            <span className="text-background/50">More qualified conversations.</span>
+            <span className="text-background/50">Zero guesswork.</span>
           </h2>
         </div>
 
@@ -108,7 +108,7 @@ export function HowItWorksSection() {
                     {activeStep === index && (
                       <div className="mt-4 h-px bg-background/20 overflow-hidden">
                         <div
-                          className="h-full bg-background w-0"
+                          className="h-full bg-primary w-0"
                           style={{
                             animation: 'progress 5s linear forwards'
                           }}
@@ -121,17 +121,47 @@ export function HowItWorksSection() {
             ))}
           </div>
 
-          {/* Buyer outcome */}
+          {/* Before/After card */}
           <div className="lg:sticky lg:top-32 self-start">
-            <div className="border border-background/10 p-8 lg:p-10 min-h-[280px] flex flex-col justify-between">
+            <div className="border border-background/10 p-8 lg:p-10 min-h-[320px] flex flex-col justify-between">
+              {/* Input */}
               <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-background/40">Lead handoff</span>
-                <h3 className="text-3xl lg:text-4xl font-display mt-5 mb-5">From signal to sales-ready record.</h3>
-                <p className="text-background/60 leading-relaxed">LeadScale handles the repetitive research and checks so your team can spend its time on the conversations that matter.</p>
+                <span className="text-xs font-mono uppercase tracking-widest text-background/40">Input</span>
+                <div className="mt-3 p-4 border border-background/10 rounded bg-background/5">
+                  <p className="font-mono text-sm text-background/70">
+                    <span className="text-background/40">name:</span> Sarah Chen
+                  </p>
+                  <p className="font-mono text-sm text-background/70">
+                    <span className="text-background/40">company:</span> Acme Corp
+                  </p>
+                </div>
               </div>
-              <div className="mt-10 flex items-center gap-3 text-sm font-mono text-background/60">
-                <span className="w-2 h-2 rounded-full bg-green-400" />
-                Ready for your workflow
+
+              {/* Arrow */}
+              <div className="flex justify-center py-4">
+                <svg width="20" height="24" viewBox="0 0 20 24" fill="none" className="text-background/30">
+                  <path d="M10 0 L10 20 M4 14 L10 20 L16 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+
+              {/* Output */}
+              <div>
+                <span className="text-xs font-mono uppercase tracking-widest text-background/40">Output</span>
+                <div className="mt-3 p-4 border border-background/10 rounded bg-background/5">
+                  <p className="font-mono text-sm text-background/70">
+                    <span className="text-background/40">email:</span> s.chen@acmecorp.com
+                  </p>
+                  <p className="font-mono text-sm text-background/70">
+                    <span className="text-background/40">phone:</span> +1 (415) 555-0142
+                  </p>
+                  <p className="font-mono text-sm text-background/70">
+                    <span className="text-background/40">title:</span> VP of Engineering
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-xs font-mono text-green-400/80">Verified</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

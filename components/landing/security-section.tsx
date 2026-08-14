@@ -6,27 +6,27 @@ import { Shield, Lock, Eye, FileCheck } from "lucide-react";
 const securityFeatures = [
   {
     icon: Shield,
-    title: "Auditable controls",
-    description: "Clear access, retention, and activity controls designed for accountable operations.",
+    title: "GDPR opt-out database",
+    description: "Every enrichment auto-checks against suppression lists before returning results. Opted-out contacts never reach your CRM.",
   },
   {
     icon: Lock,
-    title: "Encrypted by default",
-    description: "Encryption protects data in transit and at rest across the LeadScale workflow.",
+    title: "Encrypted everywhere",
+    description: "TLS 1.3 in transit, AES-256 at rest. Your prospect data is encrypted at every stage of the enrichment pipeline.",
   },
   {
     icon: Eye,
-    title: "Controlled access",
-    description: "Access controls, encryption in transit and at rest, and workspace isolation guide every workflow.",
+    title: "Workspace isolation",
+    description: "Client data never crosses workspace boundaries. Each agency client operates in a fully isolated environment with separate encryption keys.",
   },
   {
     icon: FileCheck,
-    title: "Privacy-ready workflows",
-    description: "Configurable retention and verification flows help teams align operations with their policies.",
+    title: "Audit logging",
+    description: "Every lookup, enrichment, and export is logged with timestamp, user, and workspace. Pull compliance reports in one click.",
   },
 ];
 
-const certifications = ["GDPR compliant", "CCPA ready", "SOC 2 (in progress)", "Encrypted at rest", "Auto opt-out checks"];
+const certifications = ["GDPR", "CCPA", "SOC 2 (pending)", "Encryption at rest", "Auto-suppression"];
 
 export function SecuritySection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -59,13 +59,14 @@ export function SecuritySection() {
               Security
             </span>
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              <span className="inline-block whitespace-nowrap">Trust is</span>
+              Your data,
               <br />
-              <span className="inline-block whitespace-nowrap">non-negotiable.</span>
+              your rules.
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-              Your prospect data passes through encryption at every step. GDPR and CCPA
-              compliance logging runs automatically so your team stays audit-ready.
+              B2B prospecting means handling personal data responsibly. LeadScale enforces
+              compliance at the infrastructure level — suppression lists, encryption, isolation,
+              and full audit trails come standard, not as add-ons.
             </p>
 
             {/* Certifications */}
@@ -73,7 +74,7 @@ export function SecuritySection() {
               {certifications.map((cert, index) => (
                 <span
                   key={cert}
-                  className={`px-4 py-2 border border-foreground/10 text-sm font-mono transition-all duration-500 ${
+                  className={`px-4 py-2 bg-primary/10 border border-primary/20 text-sm font-mono transition-all duration-500 ${
                     isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                   }`}
                   style={{ transitionDelay: `${index * 50 + 200}ms` }}
@@ -89,13 +90,13 @@ export function SecuritySection() {
             {securityFeatures.map((feature, index) => (
               <div
                 key={feature.title}
-                className={`p-6 border border-foreground/10 hover:border-foreground/20 transition-all duration-500 group ${
+                className={`p-6 border border-foreground/10 hover:border-primary/30 transition-all duration-500 group ${
                   isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
                 }`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start gap-4">
-                  <div className="shrink-0 w-10 h-10 flex items-center justify-center border border-foreground/10 group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
+                  <div className="shrink-0 w-10 h-10 flex items-center justify-center border border-foreground/10 group-hover:bg-primary group-hover:text-background transition-colors duration-300">
                     <feature.icon className="w-5 h-5" />
                   </div>
                   <div>

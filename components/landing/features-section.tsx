@@ -5,239 +5,277 @@ import { useEffect, useRef, useState } from "react";
 const features = [
   {
     number: "01",
-    title: "Waterfall enrichment",
-    description: "Resolve firmographic and contact data across providers in sequence, stopping when the record is complete.",
-    visual: "deploy",
+    title: "Waterfall Enrichment",
+    description: "Give us a name and company. We query 15+ providers in sequence until we find a verified email and direct dial. You only pay for results.",
+    visual: "waterfall",
   },
   {
     number: "02",
-    title: "Verified before delivery",
-    description: "Run configurable checks before enriched records reach your CRM, routing layer, or sales queue.",
-    visual: "ai",
+    title: "3-Stage Verification",
+    description: "Every email passes syntax validation, live SMTP handshake, and catch-all detection. If it bounces within 14 days, you get an automatic credit refund.",
+    visual: "verify",
   },
   {
     number: "03",
-    title: "Signal-aware routing",
-    description: "Send qualified records to the right destination with context your team can act on immediately.",
-    visual: "collab",
+    title: "Smart Routing",
+    description: "Verified contacts flow directly into HubSpot, Salesforce, or your custom webhook. Set rules for who goes where based on title, company size, or score.",
+    visual: "routing",
   },
   {
     number: "04",
-    title: "Operational visibility",
-    description: "See provider responses, verification outcomes, and workflow status from one accountable layer.",
-    visual: "security",
+    title: "AI Agent Access (MCP)",
+    description: "Your AI SDR connects via Model Context Protocol. Claude, ChatGPT, or custom agents can search, enrich, and verify contacts without human CSV exports.",
+    visual: "mcp",
   },
 ];
 
-function DeployVisual() {
+function WaterfallVisual() {
   return (
     <svg viewBox="0 0 200 160" className="w-full h-full">
-      <defs>
-        <clipPath id="deployClip">
-          <rect x="30" y="20" width="140" height="120" rx="4" />
-        </clipPath>
-      </defs>
-
-      {/* Container */}
-      <rect x="30" y="20" width="140" height="120" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
-
-      {/* Animated bars */}
-      <g clipPath="url(#deployClip)">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
+      {/* Provider cascade */}
+      {[0, 1, 2, 3, 4].map((i) => (
+        <g key={i}>
           <rect
-            key={i}
-            x="40"
-            y={35 + i * 16}
-            width="120"
-            height="10"
-            rx="2"
-            fill="currentColor"
-            opacity="0.15"
+            x={40 + i * 8}
+            y={30 + i * 22}
+            width="100"
+            height="16"
+            rx="3"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            opacity={i < 3 ? 0.25 : 1}
           >
             <animate
               attributeName="opacity"
-              values="0.15;0.8;0.15"
-              dur="2s"
-              begin={`${i * 0.15}s`}
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="width"
-              values="20;120;20"
-              dur="2s"
-              begin={`${i * 0.15}s`}
+              values={i === 3 ? "0.4;1;1" : "0.15;0.5;0.15"}
+              dur="3s"
+              begin={`${i * 0.4}s`}
               repeatCount="indefinite"
             />
           </rect>
-        ))}
-      </g>
-
-      {/* Progress indicator */}
-      <circle cx="100" cy="155" r="3" fill="currentColor" opacity="0.3">
-        <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite" />
-      </circle>
-    </svg>
-  );
-}
-
-function AIVisual() {
-  return (
-    <svg viewBox="0 0 200 160" className="w-full h-full">
-      {/* Central node */}
-      <circle cx="100" cy="80" r="12" fill="currentColor">
-        <animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite" />
-      </circle>
-
-      {/* Orbiting nodes */}
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const angle = (i * 60) * (Math.PI / 180);
-        const radius = 50;
-        return (
-          <g key={i}>
-            {/* Connection line */}
-            <line
-              x1="100"
-              y1="80"
-              x2={100 + Math.cos(angle) * radius}
-              y2={80 + Math.sin(angle) * radius}
-              stroke="currentColor"
-              strokeWidth="1"
-              opacity="0.3"
+          {/* X mark for misses, check for hit */}
+          {i < 3 && (
+            <text
+              x={148 + i * 8}
+              y={42 + i * 22}
+              fontSize="10"
+              fill="currentColor"
+              opacity="0.4"
             >
-              <animate
-                attributeName="opacity"
-                values="0.3;0.8;0.3"
-                dur="2s"
-                begin={`${i * 0.3}s`}
-                repeatCount="indefinite"
-              />
-            </line>
-
-            {/* Outer node */}
-            <circle
-              cx={100 + Math.cos(angle) * radius}
-              cy={80 + Math.sin(angle) * radius}
-              r="6"
+              --
+            </text>
+          )}
+          {i === 3 && (
+            <path
+              d={`M ${146 + i * 8} ${38 + i * 22} l 3 3 l 6 -6`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
+              strokeLinecap="round"
             >
-              <animate
-                attributeName="r"
-                values="6;8;6"
-                dur="2s"
-                begin={`${i * 0.3}s`}
-                repeatCount="indefinite"
-              />
-            </circle>
-          </g>
-        );
-      })}
-
-      {/* Pulse rings */}
-      <circle cx="100" cy="80" r="30" fill="none" stroke="currentColor" strokeWidth="1" opacity="0">
-        <animate attributeName="r" values="20;60" dur="2s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0.5;0" dur="2s" repeatCount="indefinite" />
-      </circle>
+              <animate attributeName="opacity" values="0;1;1" dur="3s" begin="1.2s" repeatCount="indefinite" />
+            </path>
+          )}
+        </g>
+      ))}
+      {/* Arrow down between rows */}
+      {[0, 1, 2].map((i) => (
+        <line
+          key={`arrow-${i}`}
+          x1={90 + i * 8}
+          y1={46 + i * 22}
+          x2={90 + (i + 1) * 8}
+          y2={50 + (i + 1) * 22}
+          stroke="currentColor"
+          strokeWidth="1"
+          opacity="0.3"
+          strokeDasharray="2 2"
+        />
+      ))}
     </svg>
   );
 }
 
-function CollabVisual() {
+function VerifyVisual() {
   return (
     <svg viewBox="0 0 200 160" className="w-full h-full">
-      {/* User A */}
-      <g>
-        <rect x="30" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
-        <circle cx="55" cy="35" r="12" fill="none" stroke="currentColor" strokeWidth="2" />
-      </g>
+      {/* Three check stages */}
+      {["Syntax", "SMTP", "Catch-all"].map((label, i) => (
+        <g key={label}>
+          <rect
+            x="50"
+            y={30 + i * 40}
+            width="100"
+            height="28"
+            rx="4"
+            fill="currentColor"
+            opacity="0.06"
+          />
+          <text
+            x="65"
+            y={48 + i * 40}
+            fontSize="10"
+            fill="currentColor"
+            opacity="0.7"
+            fontFamily="monospace"
+          >
+            {label}
+          </text>
+          {/* Animated check */}
+          <circle
+            cx="135"
+            cy={44 + i * 40}
+            r="7"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            opacity="0.3"
+          >
+            <animate
+              attributeName="opacity"
+              values="0.2;1;1"
+              dur="2.5s"
+              begin={`${i * 0.6}s`}
+              repeatCount="indefinite"
+            />
+          </circle>
+          <path
+            d={`M ${131} ${44 + i * 40} l 2.5 2.5 l 5 -5`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            opacity="0"
+          >
+            <animate
+              attributeName="opacity"
+              values="0;0;1;1"
+              dur="2.5s"
+              begin={`${i * 0.6}s`}
+              repeatCount="indefinite"
+            />
+          </path>
+          {/* Connector */}
+          {i < 2 && (
+            <line
+              x1="100"
+              y1={58 + i * 40}
+              x2="100"
+              y2={70 + i * 40}
+              stroke="currentColor"
+              strokeWidth="1"
+              opacity="0.2"
+              strokeDasharray="2 2"
+            />
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+}
 
-      {/* User B */}
-      <g>
-        <rect x="120" y="50" width="50" height="60" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
-        <circle cx="145" cy="35" r="12" fill="none" stroke="currentColor" strokeWidth="2" />
-      </g>
+function RoutingVisual() {
+  return (
+    <svg viewBox="0 0 200 160" className="w-full h-full">
+      {/* Source node */}
+      <circle cx="40" cy="80" r="10" fill="currentColor" opacity="0.8">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
+      </circle>
 
-      {/* Connection */}
-      <line x1="80" y1="80" x2="120" y2="80" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4">
-        <animate attributeName="stroke-dashoffset" values="0;-8" dur="0.5s" repeatCount="indefinite" />
-      </line>
+      {/* Routing lines to destinations */}
+      {[{ y: 40, label: "CRM" }, { y: 80, label: "Sequence" }, { y: 120, label: "Webhook" }].map((dest, i) => (
+        <g key={dest.label}>
+          <path
+            d={`M 50 80 Q 90 ${80 + (dest.y - 80) * 0.3} 120 ${dest.y}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            opacity="0.3"
+          >
+            <animate
+              attributeName="opacity"
+              values="0.2;0.7;0.2"
+              dur="2s"
+              begin={`${i * 0.5}s`}
+              repeatCount="indefinite"
+            />
+          </path>
+          {/* Destination boxes */}
+          <rect
+            x="125"
+            y={dest.y - 12}
+            width="55"
+            height="24"
+            rx="4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            opacity="0.6"
+          />
+          <text
+            x="135"
+            y={dest.y + 4}
+            fontSize="9"
+            fill="currentColor"
+            opacity="0.7"
+            fontFamily="monospace"
+          >
+            {dest.label}
+          </text>
+        </g>
+      ))}
 
-      {/* Data packet */}
-      <circle r="4" fill="currentColor">
-        <animateMotion dur="1.5s" repeatCount="indefinite">
-          <mpath href="#dataPath" />
+      {/* Animated dot traveling along path */}
+      <circle r="3" fill="currentColor">
+        <animateMotion dur="2s" repeatCount="indefinite">
+          <mpath href="#routePath" />
         </animateMotion>
       </circle>
-      <path id="dataPath" d="M 80 80 L 120 80" fill="none" />
-
-      {/* Sync indicator */}
-      <g transform="translate(100, 130)">
-        <circle r="6" fill="none" stroke="currentColor" strokeWidth="2">
-          <animate attributeName="r" values="6;10;6" dur="1s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
-        </circle>
-      </g>
+      <path id="routePath" d="M 50 80 Q 90 56 120 40" fill="none" />
     </svg>
   );
 }
 
-function SecurityVisual() {
+function MCPVisual() {
   return (
     <svg viewBox="0 0 200 160" className="w-full h-full">
-      {/* Shield */}
-      <path
-        d="M 100 20 L 150 40 L 150 90 Q 150 130 100 145 Q 50 130 50 90 L 50 40 Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
+      {/* AI agent icon */}
+      <rect x="25" y="55" width="50" height="50" rx="6" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="1.5" />
+      <text x="37" y="85" fontSize="11" fill="currentColor" opacity="0.8" fontFamily="monospace">AI</text>
 
-      {/* Inner shield */}
-      <path
-        d="M 100 35 L 135 50 L 135 85 Q 135 115 100 128 Q 65 115 65 85 L 65 50 Z"
-        fill="currentColor"
-        opacity="0.1"
-      >
-        <animate attributeName="opacity" values="0.1;0.2;0.1" dur="2s" repeatCount="indefinite" />
-      </path>
-
-      {/* Lock icon */}
-      <rect x="85" y="70" width="30" height="25" rx="3" fill="currentColor" />
-      <path
-        d="M 90 70 L 90 60 Q 90 50 100 50 Q 110 50 110 60 L 110 70"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-
-      {/* Keyhole */}
-      <circle cx="100" cy="80" r="4" fill="white" />
-      <rect x="98" y="82" width="4" height="8" fill="white" />
-
-      {/* Scan lines */}
-      <line x1="60" y1="60" x2="140" y2="60" stroke="currentColor" strokeWidth="1" opacity="0">
-        <animate attributeName="y1" values="40;120;40" dur="3s" repeatCount="indefinite" />
-        <animate attributeName="y2" values="40;120;40" dur="3s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0;0.5;0" dur="3s" repeatCount="indefinite" />
+      {/* MCP connection */}
+      <line x1="75" y1="80" x2="125" y2="80" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 3">
+        <animate attributeName="stroke-dashoffset" values="0;-7" dur="0.8s" repeatCount="indefinite" />
       </line>
+      <text x="85" y="72" fontSize="7" fill="currentColor" opacity="0.5" fontFamily="monospace">MCP</text>
+
+      {/* LeadScale API */}
+      <rect x="125" y="55" width="50" height="50" rx="6" fill="currentColor" opacity="0.1" stroke="currentColor" strokeWidth="1.5" />
+      <text x="131" y="77" fontSize="7" fill="currentColor" opacity="0.6" fontFamily="monospace">search</text>
+      <text x="131" y="89" fontSize="7" fill="currentColor" opacity="0.6" fontFamily="monospace">enrich</text>
+      <text x="131" y="101" fontSize="7" fill="currentColor" opacity="0.6" fontFamily="monospace">verify</text>
+
+      {/* Response arrow */}
+      <path d="M 125 95 Q 100 110 75 95" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3">
+        <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite" />
+      </path>
     </svg>
   );
 }
 
 function AnimatedVisual({ type }: { type: string }) {
   switch (type) {
-    case "deploy":
-      return <DeployVisual />;
-    case "ai":
-      return <AIVisual />;
-    case "collab":
-      return <CollabVisual />;
-    case "security":
-      return <SecurityVisual />;
+    case "waterfall":
+      return <WaterfallVisual />;
+    case "verify":
+      return <VerifyVisual />;
+    case "routing":
+      return <RoutingVisual />;
+    case "mcp":
+      return <MCPVisual />;
     default:
-      return <DeployVisual />;
+      return <WaterfallVisual />;
   }
 }
 
