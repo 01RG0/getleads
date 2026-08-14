@@ -31,6 +31,9 @@ LeadScale solves these core friction points through:
 | Document Name | Path | Description |
 | :--- | :--- | :--- |
 | **Product Requirements Document (PRD)** | [`PRD.md`](./PRD.md) | Problem statement, personas, JTBD, MVP scope, functional/non-functional specs, success metrics. |
+| **Documentation Structure Guide** | [`docs/README.md`](./docs/README.md) | New organized doc structure for feature-by-feature and tool-by-tool implementation plus suggested code upload mapping. |
+| **Feature Docs Index** | [`docs/features/README.md`](./docs/features/README.md) | Per-feature documentation files for implementation tracking and folder targeting. |
+| **Tool Docs Index** | [`docs/tools/README.md`](./docs/tools/README.md) | Per-tool documentation files for OSINT and MCP tool integrations. |
 | **System Architecture & Tech Stack** | [`docs/architecture.md`](./docs/architecture.md) | Micro-monolith architecture, Next.js/Fastify/Go/Python stack, AI Gateway, OSINT worker fleet. |
 | **Data Pipeline & Verification Specs** | [`docs/data_pipeline.md`](./docs/data_pipeline.md) | 5-stage streaming pipeline, 3-stage live SMTP verification, OSINT checks, deduplication, TTL & cache logic. |
 | **Server Management & Fallbacks** | [`docs/server_management_error_handling_and_fallbacks.md`](./docs/server_management_error_handling_and_fallbacks.md) | **[NEW]** Request lifecycle, process management, RFC 7807 error formats, circuit breakers, fallback cascades, DLQ retries. |
