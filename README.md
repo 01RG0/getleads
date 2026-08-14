@@ -11,6 +11,15 @@
 
 ---
 
+## Frontend Apps
+
+| App | Path | Description |
+| :--- | :--- | :--- |
+| **Landing Page** | [`apps/landing/`](./apps/landing/) | Marketing landing page (Next.js) |
+| **Opening Animation** | [`apps/opening/`](./apps/opening/) | Intro/opening animation screen (Next.js) |
+
+---
+
 ## 🚀 EXECUTIVE SUMMARY & STRATEGIC BLUEPRINT
 
 The B2B contact data market ($12.8B in 2025 → $18.5B by 2028) is experiencing a fundamental shift. Legacy single-database vendors (ZoomInfo, Apollo.io) suffer from high data decay (22.5%/year), high email bounce rates (15–30%), predatory per-seat contracts, and lack of AI agent compatibility.
