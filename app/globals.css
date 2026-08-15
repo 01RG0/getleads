@@ -309,3 +309,23 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 }
+
+/* Auth modal mesh blob animations */
+@keyframes mesh-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-8%, 12%) scale(1.08); }
+  66%       { transform: translate(6%, -8%) scale(0.96); }
+}
+@keyframes mesh-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(10%, -10%) scale(1.12); }
+  70%       { transform: translate(-5%, 6%) scale(0.94); }
+}
+@keyframes mesh-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-12%, -8%) scale(1.15); }
+}
+
+.animate-mesh-1 { animation: mesh-1 9s ease-in-out infinite; }
+.animate-mesh-2 { animation: mesh-2 11s ease-in-out infinite; }
+.animate-mesh-3 { animation: mesh-3 7s ease-in-out infinite; }

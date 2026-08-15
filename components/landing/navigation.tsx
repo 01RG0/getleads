@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { AuthModals } from "./auth-modals";
+
+type ModalType = "signin" | "signup" | null;
 
 const navLinks = [
   { name: "Features", href: "#features" },
@@ -15,6 +18,7 @@ const navLinks = [
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [authModal, setAuthModal] = useState<ModalType>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +29,7 @@ export function Navigation() {
   }, []);
 
   return (
+    <>
     <header
       className={`fixed z-50 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
         isScrolled
@@ -66,15 +71,18 @@ export function Navigation() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
-            <a href="#" className={`text-muted-foreground hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
+            <button
+              onClick={() => setAuthModal("signin")}
+              className={`text-muted-foreground hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}
+            >
               Sign in
-            </a>
+            </button>
             <Button
-              asChild
               size="sm"
+              onClick={() => setAuthModal("signup")}
               className={`bg-primary hover:bg-primary/90 text-primary-foreground rounded-full btn-tactile ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
             >
-              <a href="#pricing">Start free</a>
+              Start free
             </Button>
           </div>
 
@@ -133,20 +141,22 @@ export function Navigation() {
             <Button
               variant="outline"
               className="flex-1 rounded-full h-14 text-base"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => { setIsMobileMenuOpen(false); setAuthModal("signin"); }}
             >
               Sign in
             </Button>
             <Button
-              asChild
               className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-14 text-base"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => { setIsMobileMenuOpen(false); setAuthModal("signup"); }}
             >
-              <a href="#pricing">Start free</a>
+              Start free
             </Button>
           </div>
         </div>
       </div>
     </header>
+
+    <AuthModals open={authModal} onClose={() => setAuthModal(null)} />
+    </>
   );
 }

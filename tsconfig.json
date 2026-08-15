@@ -39,6 +39,7 @@
     "node_modules",
     "apps",
     "backend",
+    "fluid-cta-animation-template",
     "components/opening"
   ]
 }
