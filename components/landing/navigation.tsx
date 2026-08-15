@@ -64,10 +64,8 @@ export function Navigation() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            {/* Sign in — amber pill that morphs into sign-in card */}
-            <SignInCTA className={isScrolled ? "text-xs py-1.5 px-4" : "py-2 px-5"} />
-            {/* Start free — green pill that morphs into sign-up card */}
-            <StartFreeCTA className={`btn-tactile ${isScrolled ? "text-xs py-1.5 px-4" : "py-2 px-5"}`} />
+            <SignInCTA scrolled={isScrolled} />
+            <StartFreeCTA scrolled={isScrolled} />
           </div>
 
           {/* Mobile Menu Button */}
@@ -112,10 +110,10 @@ export function Navigation() {
             style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
             <div className="flex-1 flex">
-              <SignInCTA className="w-full h-14 text-base rounded-full flex items-center justify-center" />
+              <SignInCTA />
             </div>
             <div className="flex-1 flex">
-              <StartFreeCTA className="w-full h-14 text-base rounded-full flex items-center justify-center" />
+              <StartFreeCTA />
             </div>
           </div>
         </div>
