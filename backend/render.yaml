@@ -1,0 +1,29 @@
+# Render deployment config — https://render.com/docs/render-yaml-spec
+services:
+  - type: web
+    name: leadscale-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: starter          # upgrade to standard for production
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      # Set these in Render dashboard or via render.yaml sync:
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: API_SECRET_KEY
+        generateValue: false
+      - key: CORS_ORIGIN
+        sync: false
