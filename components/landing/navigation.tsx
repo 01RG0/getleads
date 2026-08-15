@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { LayoutGroup } from "framer-motion";
 import { ThemeToggle } from "./theme-toggle";
 import { SignInCTA, StartFreeCTA } from "./auth-modals";
 
@@ -64,8 +65,10 @@ export function Navigation() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <SignInCTA scrolled={isScrolled} />
-            <StartFreeCTA scrolled={isScrolled} />
+            <LayoutGroup id="auth-cta">
+              <SignInCTA scrolled={isScrolled} />
+              <StartFreeCTA scrolled={isScrolled} />
+            </LayoutGroup>
           </div>
 
           {/* Mobile Menu Button */}

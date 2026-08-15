@@ -61,7 +61,9 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
     return () => window.removeEventListener("keydown", fn);
   }, []);
 
-  // Panel — portalled to body, matches template exactly
+  const btnH = scrolled ? "h-8" : "h-9";
+  const btnText = scrolled ? "text-xs px-4" : "text-sm px-5";
+
   const panel = (
     <AnimatePresence initial={false}>
       {isExpanded && (
@@ -69,7 +71,7 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
           <motion.div
             layoutId="signin-bg"
             style={{ borderRadius: "24px" }}
-            layout
+            // no `layout` — only layoutId drives the shared transition
             className="relative flex h-full w-full overflow-hidden bg-[#1C1712] transform-gpu will-change-transform"
           >
             <div className="h-full w-full overflow-y-auto">
@@ -141,7 +143,6 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
               </motion.div>
             </div>
 
-            {/* Mesh gradient — behind content */}
             <motion.div
               initial={{ opacity: 0, scale: 2 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -169,27 +170,30 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
 
   return (
     <>
-      {/* Button — only rendered when NOT expanded, exact template pattern */}
       <AnimatePresence initial={false}>
         {!isExpanded && (
-          <motion.div className="inline-block relative cursor-pointer" onClick={() => setIsExpanded(true)}>
-            {/* This inner div carries layoutId — it morphs into the panel */}
+          <motion.div
+            className="inline-block relative cursor-pointer"
+            onClick={() => setIsExpanded(true)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {/*
+              layoutId ONLY — no `layout` prop.
+              `layout` caused Framer Motion to animate unrelated page elements (nav logo).
+              Explicit height via btnH class ensures the absolute fill covers the button.
+            */}
             <motion.div
               layoutId="signin-bg"
               style={{ borderRadius: "100px" }}
-              layout
-              className="absolute inset-0 bg-[#1C1712] transform-gpu will-change-transform"
+              className={`absolute inset-0 bg-[#1C1712] border border-white/20 transform-gpu will-change-transform ${btnH}`}
             />
-            <motion.span
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ delay: 0.15 }}
-              layout={false}
-              className={`relative text-[#FAF8F5] font-medium tracking-[-0.01em] select-none ${scrolled ? "text-xs px-4 py-1.5" : "text-sm px-5 py-2"}`}
-            >
+            {/* Explicit h-* so inline-block parent gets correct height for absolute child */}
+            <div className={`relative flex items-center text-[#FAF8F5] font-medium tracking-[-0.01em] select-none ${btnH} ${btnText}`}>
               Sign in
-            </motion.span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -216,6 +220,9 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
     return () => window.removeEventListener("keydown", fn);
   }, []);
 
+  const btnH = scrolled ? "h-8" : "h-9";
+  const btnText = scrolled ? "text-xs px-4" : "text-sm px-5";
+
   const panel = (
     <AnimatePresence initial={false}>
       {isExpanded && (
@@ -223,7 +230,6 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
           <motion.div
             layoutId="signup-bg"
             style={{ borderRadius: "24px" }}
-            layout
             className="relative flex h-full w-full overflow-hidden bg-[#A6631F] transform-gpu will-change-transform"
           >
             <div className="h-full w-full overflow-y-auto">
@@ -343,26 +349,24 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
 
   return (
     <>
-      {/* Button — only rendered when NOT expanded, exact template pattern */}
       <AnimatePresence initial={false}>
         {!isExpanded && (
-          <motion.div className="inline-block relative cursor-pointer" onClick={() => setIsExpanded(true)}>
+          <motion.div
+            className="inline-block relative cursor-pointer"
+            onClick={() => setIsExpanded(true)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
             <motion.div
               layoutId="signup-bg"
               style={{ borderRadius: "100px" }}
-              layout
-              className="absolute inset-0 bg-[#A6631F] transform-gpu will-change-transform"
+              className={`absolute inset-0 bg-[#A6631F] transform-gpu will-change-transform ${btnH}`}
             />
-            <motion.span
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ delay: 0.15 }}
-              layout={false}
-              className={`relative text-white font-medium tracking-[-0.01em] select-none ${scrolled ? "text-xs px-4 py-1.5" : "text-sm px-5 py-2"}`}
-            >
+            <div className={`relative flex items-center text-white font-medium tracking-[-0.01em] select-none ${btnH} ${btnText}`}>
               Start free
-            </motion.span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
