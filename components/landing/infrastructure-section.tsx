@@ -168,7 +168,7 @@ export function InfrastructureSection() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes pulseBar {
           0%, 100% { opacity: 0.3; transform: scaleY(1); }
           50% { opacity: 1; transform: scaleY(1.5); }

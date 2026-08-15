@@ -5,3 +5,7 @@ allowBuilds:
   sharp: true
   esbuild: true
   msgpackr-extract: true
+
+overrides:
+  "@types/react": "^19"
+  "@types/react-dom": "^19"

@@ -245,7 +245,7 @@ export function SecuritySection() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes scanDown {
           0% { top: -32px; }
           100% { top: 100%; }

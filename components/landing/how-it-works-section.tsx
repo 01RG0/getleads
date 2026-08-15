@@ -233,7 +233,7 @@ export function HowItWorksSection() {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes progress {
           from { width: 0%; }
           to { width: 100%; }

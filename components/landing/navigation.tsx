@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
-import { AuthModals } from "./auth-modals";
-
-type ModalType = "signin" | "signup" | null;
+import { SignInCTA, StartFreeCTA } from "./auth-modals";
 
 const navLinks = [
   { name: "Features", href: "#features" },
@@ -18,23 +15,17 @@ const navLinks = [
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [authModal, setAuthModal] = useState<ModalType>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <>
     <header
-      className={`fixed z-50 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-        isScrolled
-          ? "top-4 left-4 right-4"
-          : "top-0 left-0 right-0"
+      className={`fixed z-40 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        isScrolled ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
       }`}
     >
       <nav
@@ -51,7 +42,9 @@ export function Navigation() {
         >
           {/* Logo */}
           <a href="#" className="flex items-center gap-2 group">
-            <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>LeadScale</span>
+            <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>
+              LeadScale
+            </span>
           </a>
 
           {/* Desktop Navigation */}
@@ -69,21 +62,12 @@ export function Navigation() {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <button
-              onClick={() => setAuthModal("signin")}
-              className={`text-muted-foreground hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}
-            >
-              Sign in
-            </button>
-            <Button
-              size="sm"
-              onClick={() => setAuthModal("signup")}
-              className={`bg-primary hover:bg-primary/90 text-primary-foreground rounded-full btn-tactile ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
-            >
-              Start free
-            </Button>
+            {/* Sign in — amber pill that morphs into sign-in card */}
+            <SignInCTA className={isScrolled ? "text-xs py-1.5 px-4" : "py-2 px-5"} />
+            {/* Start free — green pill that morphs into sign-up card */}
+            <StartFreeCTA className={`btn-tactile ${isScrolled ? "text-xs py-1.5 px-4" : "py-2 px-5"}`} />
           </div>
 
           {/* Mobile Menu Button */}
@@ -92,26 +76,18 @@ export function Navigation() {
             className="md:hidden p-2"
             aria-label="Toggle menu"
           >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </nav>
 
-      {/* Mobile Menu - Full Screen Overlay */}
+      {/* Mobile Menu */}
       <div
         className={`md:hidden fixed inset-0 bg-background z-40 transition-all duration-500 ${
-          isMobileMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+          isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
-        style={{ top: 0 }}
       >
         <div className="flex flex-col h-full px-8 pt-28 pb-8">
-          {/* Navigation Links */}
           <div className="flex-1 flex flex-col justify-center gap-8">
             {navLinks.map((link, i) => (
               <a
@@ -119,9 +95,7 @@ export function Navigation() {
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`text-5xl font-display text-foreground hover:text-primary transition-all duration-500 ${
-                  isMobileMenuOpen
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4"
+                  isMobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
                 style={{ transitionDelay: isMobileMenuOpen ? `${i * 75}ms` : "0ms" }}
               >
@@ -130,33 +104,22 @@ export function Navigation() {
             ))}
           </div>
 
-          {/* Bottom CTAs */}
-          <div className={`flex gap-4 pt-8 border-t border-border transition-all duration-500 ${
-            isMobileMenuOpen
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4"
-          }`}
-          style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
+          {/* Mobile CTAs */}
+          <div
+            className={`flex gap-4 pt-8 border-t border-border transition-all duration-500 ${
+              isMobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            }`}
+            style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
-            <Button
-              variant="outline"
-              className="flex-1 rounded-full h-14 text-base"
-              onClick={() => { setIsMobileMenuOpen(false); setAuthModal("signin"); }}
-            >
-              Sign in
-            </Button>
-            <Button
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-14 text-base"
-              onClick={() => { setIsMobileMenuOpen(false); setAuthModal("signup"); }}
-            >
-              Start free
-            </Button>
+            <div className="flex-1 flex">
+              <SignInCTA className="w-full h-14 text-base rounded-full flex items-center justify-center" />
+            </div>
+            <div className="flex-1 flex">
+              <StartFreeCTA className="w-full h-14 text-base rounded-full flex items-center justify-center" />
+            </div>
           </div>
         </div>
       </div>
     </header>
-
-    <AuthModals open={authModal} onClose={() => setAuthModal(null)} />
-    </>
   );
 }
