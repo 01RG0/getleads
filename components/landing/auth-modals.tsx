@@ -6,13 +6,11 @@ import { X, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MeshGradient } from "@paper-design/shaders-react";
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
 function PasswordInput({ id, label, name }: { id: string; label: string; name: string }) {
   const [show, setShow] = useState(false);
   return (
     <div>
-      <label htmlFor={id} className="block text-[10px] font-mono font-normal text-white mb-2 tracking-[0.5px] uppercase">
+      <label htmlFor={id} className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">
         {label} *
       </label>
       <div className="relative">
@@ -20,7 +18,7 @@ function PasswordInput({ id, label, name }: { id: string; label: string; name: s
           type={show ? "text" : "password"}
           id={id}
           name={name}
-          className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm h-10"
+          className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10"
         />
         <button
           type="button"
@@ -46,9 +44,7 @@ function GoogleIcon() {
   );
 }
 
-// ─── Sign In CTA ───────────────────────────────────────────────────────────────
-// Uses site foreground color for the button pill (works in both dark/light).
-// Panel is a warm dark neutral.
+// ─── Sign In ───────────────────────────────────────────────────────────────────
 
 export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -65,36 +61,36 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
     return () => window.removeEventListener("keydown", fn);
   }, []);
 
+  // Panel — portalled to body, matches template exactly
   const panel = (
     <AnimatePresence initial={false}>
       {isExpanded && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-2">
           <motion.div
-            layoutId="signin-card"
+            layoutId="signin-bg"
             style={{ borderRadius: "24px" }}
             layout
-            className="relative flex h-full w-full overflow-hidden transform-gpu will-change-transform"
+            className="relative flex h-full w-full overflow-hidden bg-[#1C1712] transform-gpu will-change-transform"
           >
-            <div className="h-full w-full overflow-y-auto" style={{ backgroundColor: "#1C1712" }}>
+            <div className="h-full w-full overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="relative py-8 z-10 min-h-full flex flex-col lg:flex-row w-full max-w-[1100px] mx-auto items-center p-6 sm:p-10 lg:p-16 gap-8 lg:gap-16"
               >
-                {/* Left */}
                 <div className="flex-1 flex flex-col justify-center space-y-3 w-full">
                   <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium text-white leading-none tracking-[-0.03em]">
                     Welcome back
                   </h2>
-                  <div className="space-y-4 sm:space-y-6 pt-4">
+                  <div className="space-y-4 pt-4">
                     {[
-                      { icon: "M5 13l4 4L19 7", text: "Pick up right where you left off — leads, lists, and enrichment history waiting." },
-                      { icon: "M13 10V3L4 14h7v7l9-11h-7z", text: "Real-time enrichment and waterfall accuracy — always running in the background." },
-                    ].map(({ icon, text }, i) => (
-                      <div key={i} className="flex gap-3 sm:gap-4">
-                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
+                      { d: "M5 13l4 4L19 7", text: "Pick up right where you left off — leads, lists, and enrichment history waiting." },
+                      { d: "M13 10V3L4 14h7v7l9-11h-7z", text: "Real-time enrichment and waterfall accuracy — always running in the background." },
+                    ].map(({ d, text }, i) => (
+                      <div key={i} className="flex gap-3">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
                           <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
                           </svg>
                         </div>
                         <p className="text-sm sm:text-base text-white/80 leading-[150%] self-center">{text}</p>
@@ -106,7 +102,7 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
                       LeadScale cut our bounce rate from 18% to under 2% in the first week.
                     </p>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-semibold">MK</div>
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-semibold">MK</div>
                       <div>
                         <p className="text-base text-white">Marcus Kim</p>
                         <p className="text-sm text-white/60">Head of Growth, Velocity</p>
@@ -114,8 +110,6 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
                     </div>
                   </div>
                 </div>
-
-                {/* Right — form */}
                 <div className="flex-1 w-full">
                   <form className="space-y-4 sm:space-y-5">
                     <div>
@@ -127,7 +121,7 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
                     <div className="flex justify-end">
                       <button type="button" className="text-xs text-white/50 hover:text-white transition-colors">Forgot password?</button>
                     </div>
-                    <button type="submit" className="w-full px-8 py-2.5 rounded-full bg-white text-[#1C1712] font-medium hover:bg-white/90 transition-colors tracking-[-0.03em] h-10">
+                    <button type="submit" className="w-full px-8 py-2.5 rounded-full bg-white text-[#1C1712] font-medium hover:bg-white/90 transition-colors h-10">
                       Sign in
                     </button>
                     <div className="flex items-center gap-3">
@@ -147,23 +141,23 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
               </motion.div>
             </div>
 
-            {/* MeshGradient */}
+            {/* Mesh gradient — behind content */}
             <motion.div
               initial={{ opacity: 0, scale: 2 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               layout={false}
               transition={{ duration: 0.15, delay: 0.05 }}
-              className="absolute h-full inset-0 overflow-hidden pointer-events-none"
+              className="absolute inset-0 overflow-hidden pointer-events-none"
               style={{ borderRadius: "24px" }}
             >
-              <MeshGradient speed={1} colors={["#2A1F15", "#1C1410", "#332518", "#150F08"]}
+              <MeshGradient speed={1} colors={["#2A1F15", "#1C1410", "#332518", "#0E0A06"]}
                 distortion={0.8} swirl={0.1} grainMixer={0} grainOverlay={0}
-                className="inset-0 sticky top-0" style={{ height: "100%", width: "100%" }} />
+                style={{ height: "100%", width: "100%" }} />
             </motion.div>
 
             <motion.button onClick={() => setIsExpanded(false)}
-              className="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center text-white bg-transparent hover:bg-white/10 rounded-full transition-colors"
+              className="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center text-white hover:bg-white/10 rounded-full transition-colors"
               aria-label="Close">
               <X className="h-5 w-5" />
             </motion.button>
@@ -175,36 +169,37 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
 
   return (
     <>
+      {/* Button — only rendered when NOT expanded, exact template pattern */}
       <AnimatePresence initial={false}>
         {!isExpanded && (
-          // The layoutId IS the pill — background color directly on it, no absolute child
-          <motion.div
-            layoutId="signin-card"
-            style={{ borderRadius: "100px" }}
-            layout
-            onClick={() => setIsExpanded(true)}
-            className={`inline-flex items-center cursor-pointer border border-border/60 bg-foreground/8 transform-gpu will-change-transform ${scrolled ? "h-8" : "h-9"}`}
-          >
+          <motion.div className="inline-block relative cursor-pointer" onClick={() => setIsExpanded(true)}>
+            {/* This inner div carries layoutId — it morphs into the panel */}
+            <motion.div
+              layoutId="signin-bg"
+              style={{ borderRadius: "100px" }}
+              layout
+              className="absolute inset-0 bg-[#1C1712] transform-gpu will-change-transform"
+            />
             <motion.span
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              exit={{ opacity: 0, scale: 0.8 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ delay: 0.15 }}
               layout={false}
-              className={`text-foreground/80 hover:text-foreground font-medium tracking-[-0.01em] select-none transition-colors ${scrolled ? "text-xs px-4" : "text-sm px-5"}`}
+              className={`relative text-[#FAF8F5] font-medium tracking-[-0.01em] select-none ${scrolled ? "text-xs px-4 py-1.5" : "text-sm px-5 py-2"}`}
             >
               Sign in
             </motion.span>
           </motion.div>
         )}
       </AnimatePresence>
+
       {mounted && createPortal(panel, document.body)}
     </>
   );
 }
 
-// ─── Start Free CTA ────────────────────────────────────────────────────────────
-// Uses the site's primary amber color — the main CTA. Panel is amber.
+// ─── Start Free ────────────────────────────────────────────────────────────────
 
 export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -226,7 +221,7 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
       {isExpanded && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-2">
           <motion.div
-            layoutId="signup-card"
+            layoutId="signup-bg"
             style={{ borderRadius: "24px" }}
             layout
             className="relative flex h-full w-full overflow-hidden bg-[#A6631F] transform-gpu will-change-transform"
@@ -237,20 +232,19 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
                 animate={{ opacity: 1 }}
                 className="relative py-8 z-10 min-h-full flex flex-col lg:flex-row w-full max-w-[1100px] mx-auto items-center p-6 sm:p-10 lg:p-16 gap-8 lg:gap-16"
               >
-                {/* Left */}
                 <div className="flex-1 flex flex-col justify-center space-y-3 w-full">
                   <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium text-white leading-none tracking-[-0.03em]">
                     Start for free
                   </h2>
-                  <div className="space-y-4 sm:space-y-6 pt-4">
+                  <div className="space-y-4 pt-4">
                     {[
-                      { icon: "M5 13l4 4L19 7", text: "Free plan — 100 enrichments/month, no credit card required to get started." },
-                      { icon: "M13 10V3L4 14h7v7l9-11h-7z", text: "Waterfall enrichment across 10+ providers with <1.8% bounce rate guarantee." },
-                    ].map(({ icon, text }, i) => (
-                      <div key={i} className="flex gap-3 sm:gap-4">
-                        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center">
+                      { d: "M5 13l4 4L19 7", text: "Free plan — 100 enrichments/month, no credit card required to get started." },
+                      { d: "M13 10V3L4 14h7v7l9-11h-7z", text: "Waterfall enrichment across 10+ providers with <1.8% bounce rate guarantee." },
+                    ].map(({ d, text }, i) => (
+                      <div key={i} className="flex gap-3">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
                           <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
                           </svg>
                         </div>
                         <p className="text-sm sm:text-base text-white/80 leading-[150%] self-center">{text}</p>
@@ -262,7 +256,7 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
                       We went from 400 cold emails a week to 4,000 — with better reply rates.
                     </p>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-semibold">SR</div>
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-semibold">SR</div>
                       <div>
                         <p className="text-base text-white">Sara Reyes</p>
                         <p className="text-sm text-white/60">Founder, PipeStack</p>
@@ -270,25 +264,23 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
                     </div>
                   </div>
                 </div>
-
-                {/* Right — form */}
                 <div className="flex-1 w-full">
                   <form className="space-y-4 sm:space-y-5">
                     <div>
                       <label htmlFor="sf-name" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Full Name *</label>
                       <input type="text" id="sf-name" name="name"
-                        className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
+                        className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
                     </div>
                     <div>
                       <label htmlFor="sf-email" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Work Email *</label>
                       <input type="email" id="sf-email" name="email"
-                        className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
+                        className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4">
                       <div className="flex-1">
                         <label htmlFor="sf-company" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Company</label>
                         <input type="text" id="sf-company" name="company"
-                          className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
+                          className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
                       </div>
                       <div className="sm:w-32 w-full">
                         <label htmlFor="sf-size" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Team Size</label>
@@ -304,7 +296,7 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
                       </div>
                     </div>
                     <PasswordInput id="sf-password" label="Password" name="password" />
-                    <button type="submit" className="w-full px-8 py-2.5 rounded-full bg-white text-[#7A3F0E] font-medium hover:bg-white/90 transition-colors tracking-[-0.03em] h-10">
+                    <button type="submit" className="w-full px-8 py-2.5 rounded-full bg-white text-[#7A3F0E] font-medium hover:bg-white/90 transition-colors h-10">
                       Create account
                     </button>
                     <div className="flex items-center gap-3">
@@ -324,23 +316,22 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
               </motion.div>
             </div>
 
-            {/* MeshGradient */}
             <motion.div
               initial={{ opacity: 0, scale: 2 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               layout={false}
               transition={{ duration: 0.15, delay: 0.05 }}
-              className="absolute h-full inset-0 overflow-hidden pointer-events-none"
+              className="absolute inset-0 overflow-hidden pointer-events-none"
               style={{ borderRadius: "24px" }}
             >
               <MeshGradient speed={1} colors={["#C47A2A", "#7A3F0E", "#A6631F", "#5C2E08"]}
                 distortion={0.8} swirl={0.1} grainMixer={0} grainOverlay={0}
-                className="inset-0 sticky top-0" style={{ height: "100%", width: "100%" }} />
+                style={{ height: "100%", width: "100%" }} />
             </motion.div>
 
             <motion.button onClick={() => setIsExpanded(false)}
-              className="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center text-white bg-transparent hover:bg-white/10 rounded-full transition-colors"
+              className="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center text-white hover:bg-white/10 rounded-full transition-colors"
               aria-label="Close">
               <X className="h-5 w-5" />
             </motion.button>
@@ -352,28 +343,30 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
 
   return (
     <>
+      {/* Button — only rendered when NOT expanded, exact template pattern */}
       <AnimatePresence initial={false}>
         {!isExpanded && (
-          <motion.div
-            layoutId="signup-card"
-            style={{ borderRadius: "100px" }}
-            layout
-            onClick={() => setIsExpanded(true)}
-            className={`inline-flex items-center cursor-pointer bg-primary btn-tactile transform-gpu will-change-transform ${scrolled ? "h-8" : "h-9"}`}
-          >
+          <motion.div className="inline-block relative cursor-pointer" onClick={() => setIsExpanded(true)}>
+            <motion.div
+              layoutId="signup-bg"
+              style={{ borderRadius: "100px" }}
+              layout
+              className="absolute inset-0 bg-[#A6631F] transform-gpu will-change-transform"
+            />
             <motion.span
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              exit={{ opacity: 0, scale: 0.8 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ delay: 0.15 }}
               layout={false}
-              className={`text-primary-foreground font-medium tracking-[-0.01em] select-none ${scrolled ? "text-xs px-4" : "text-sm px-5"}`}
+              className={`relative text-white font-medium tracking-[-0.01em] select-none ${scrolled ? "text-xs px-4 py-1.5" : "text-sm px-5 py-2"}`}
             >
               Start free
             </motion.span>
           </motion.div>
         )}
       </AnimatePresence>
+
       {mounted && createPortal(panel, document.body)}
     </>
   );
