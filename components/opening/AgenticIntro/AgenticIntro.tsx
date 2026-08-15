@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import "./AgenticIntro.css"
 
 const LETTERS = ["L", "E", "A", "D", "S", "C", "A", "L", "E"]
@@ -29,13 +29,16 @@ export function AgenticIntro({ onComplete, className = "" }: AgenticIntroProps) 
   const [phase, setPhase] = useState<Phase>("idle")
   const [curtainUp, setCurtainUp] = useState(false)
 
-  const complete = useCallback(() => onComplete?.(), [onComplete])
+  const hasRun = useRef(false)
 
   useEffect(() => {
+    if (hasRun.current) return
+    hasRun.current = true
+
     const t0 = setTimeout(() => setPhase("in"), 80)
     const t1 = setTimeout(() => setPhase("out"), LETTERS_IN_TOTAL)
     const t2 = setTimeout(() => setCurtainUp(true), CURTAIN_DELAY)
-    const t3 = setTimeout(complete, HERO_REVEAL_MS)
+    const t3 = setTimeout(() => onComplete?.(), HERO_REVEAL_MS)
     const t4 = setTimeout(() => setPhase("done"), ANIM_TOTAL)
 
     return () => {
@@ -45,7 +48,7 @@ export function AgenticIntro({ onComplete, className = "" }: AgenticIntroProps) 
       clearTimeout(t3)
       clearTimeout(t4)
     }
-  }, [complete])
+  }, [])
 
   if (phase === "done") return null
 
@@ -72,7 +75,7 @@ export function AgenticIntro({ onComplete, className = "" }: AgenticIntroProps) 
 
             return (
               <span
-                key={letter}
+                key={i}
                 className="agentic-intro__letter"
                 style={{
                   opacity: isIdle ? 0 : isIn ? 1 : 0,

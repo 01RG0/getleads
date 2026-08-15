@@ -1,73 +1,109 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-
-function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: string; suffix?: string; prefix?: string }) {
-  const [count, setCount] = useState(end);
-  const ref = useRef<HTMLDivElement>(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          const duration = 2000;
-          const startTime = performance.now();
-
-          const animate = (currentTime: number) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            setCount(end);
-
-            if (progress < 1) {
-              requestAnimationFrame(animate);
-            }
-          };
-
-          requestAnimationFrame(animate);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [end, hasAnimated]);
-
-  return (
-    <div ref={ref} className="text-6xl lg:text-8xl font-display tracking-tight">
-      {prefix}{count}{suffix}
-    </div>
-  );
-}
+import { ShieldCheck, Zap, Database, DollarSign } from "lucide-react";
 
 const metrics = [
   {
-    value: "<1.8%",
-    suffix: "",
-    prefix: "",
-    label: "Guaranteed bounce rate",
+    value: "<2%",
+    label: "Bounce rate",
+    description: "Guaranteed. Auto-refund if a verified email bounces within 14 days.",
+    animatedValue: 1.8,
+    suffix: "%",
+    prefix: "<",
+    icon: ShieldCheck,
+    color: "text-[#3D7A4E]",
+    bgColor: "bg-[#3D7A4E]/10",
+    barColor: "bg-[#3D7A4E]",
+    barWidth: "18%",
   },
   {
-    value: "$49",
-    suffix: "/mo",
+    value: "1.5s",
+    label: "Average enrichment",
+    description: "Time to enrich a contact through the full waterfall pipeline.",
+    animatedValue: 1.5,
+    suffix: "s",
     prefix: "",
-    label: "Starting price",
-  },
-  {
-    value: "<1.8s",
-    suffix: "",
-    prefix: "",
-    label: "p95 waterfall latency",
+    icon: Zap,
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    barColor: "bg-primary",
+    barWidth: "85%",
   },
   {
     value: "15+",
-    suffix: "",
+    label: "Providers",
+    description: "Data sources queried in sequence. You get the best result, not just one source.",
+    animatedValue: 15,
+    suffix: "+",
     prefix: "",
-    label: "Free LLM APIs supported",
+    icon: Database,
+    color: "text-[#6B6055]",
+    bgColor: "bg-[#6B6055]/10",
+    barColor: "bg-[#6B6055]",
+    barWidth: "100%",
+  },
+  {
+    value: "$49/mo",
+    label: "All-in starting price",
+    description: "No per-seat fees, no hidden credit traps.",
+    animatedValue: 49,
+    suffix: "/mo",
+    prefix: "$",
+    icon: DollarSign,
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    barColor: "bg-primary",
+    barWidth: "40%",
   },
 ];
+
+function CountUpValue({ metric, isVisible, index }: { metric: typeof metrics[0]; isVisible: boolean; index: number }) {
+  const [display, setDisplay] = useState("0");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const delay = index * 200;
+    const timeout = setTimeout(() => {
+      const target = metric.animatedValue;
+      const steps = 50;
+      const stepDuration = 1800 / steps;
+      let current = 0;
+
+      const timer = setInterval(() => {
+        current++;
+        const progress = current / steps;
+        const eased = 1 - Math.pow(1 - progress, 5);
+        const value = target * eased;
+
+        if (metric.suffix === "s" || metric.value.includes(".")) {
+          setDisplay(value.toFixed(1));
+        } else {
+          setDisplay(Math.round(value).toString());
+        }
+
+        if (current >= steps) {
+          clearInterval(timer);
+          if (metric.suffix === "s" || metric.value.includes(".")) {
+            setDisplay(target.toFixed(1));
+          } else {
+            setDisplay(target.toString());
+          }
+          setDone(true);
+        }
+      }, stepDuration);
+    }, delay);
+
+    return () => clearTimeout(timeout);
+  }, [isVisible, metric, index]);
+
+  return (
+    <span className={`inline-block transition-transform duration-300 ${done ? "scale-100" : "scale-110"}`}>
+      {metric.prefix}{display}{metric.suffix}
+    </span>
+  );
+}
 
 export function MetricsSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -76,9 +112,9 @@ export function MetricsSection() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        setIsVisible(entry.isIntersecting);
       },
-      { threshold: 0.1 }
+      { threshold: 0.15 }
     );
 
     if (sectionRef.current) observer.observe(sectionRef.current);
@@ -86,49 +122,82 @@ export function MetricsSection() {
   }, []);
 
   return (
-    <section id="studio" ref={sectionRef} className="relative py-24 lg:py-32 border-y border-foreground/10">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
+    <section id="metrics" ref={sectionRef} className="relative py-24 lg:py-32 border-y border-border overflow-hidden">
+      {/* Animated background pattern */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 20% 50%, currentColor 1px, transparent 1px),
+                            radial-gradient(circle at 80% 20%, currentColor 1px, transparent 1px),
+                            radial-gradient(circle at 60% 80%, currentColor 1px, transparent 1px)`,
+          backgroundSize: '100px 100px, 80px 80px, 120px 120px',
+        }} />
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 relative">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-16 lg:mb-24">
-          <div>
-            <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
-              <span className="w-8 h-px bg-foreground/30" />
-              Key figures
-            </span>
-            <h2
-              className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-            >
-              Performance you
-              <br />
-              can measure.
-            </h2>
-          </div>
-          <div className="flex items-center gap-3 font-mono text-sm text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            Published figures
-          </div>
+        <div className="max-w-2xl mb-16">
+          <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
+            <span className="w-8 h-px bg-border" />
+            Key figures
+          </span>
+          <h2
+            className={`text-4xl lg:text-5xl font-semibold tracking-tight transition-all duration-700 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            }`}
+          >
+            Performance you can measure.
+          </h2>
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-foreground/10">
-          {metrics.map((metric, index) => (
-            <div
-              key={metric.label}
-              className={`bg-background p-8 lg:p-12 transition-all duration-700 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              <AnimatedCounter
-                end={metric.value}
-                suffix={metric.suffix}
-                prefix={metric.prefix}
-              />
-              <div className="mt-4 text-lg text-muted-foreground">{metric.label}</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {metrics.map((metric, index) => {
+            const Icon = metric.icon;
+            return (
+              <div
+                key={metric.label}
+                className={`group relative p-8 rounded-xl border border-border bg-card overflow-hidden card-elevated transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/30 hover:-translate-y-2 ${
+                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+                }`}
+                style={{ transitionDelay: `${index * 150}ms` }}
+              >
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-foreground/10 to-transparent pointer-events-none" />
+
+                {/* Top icon */}
+                <div className={`w-10 h-10 rounded-lg ${metric.bgColor} flex items-center justify-center mb-5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>
+                  <Icon className={`w-5 h-5 ${metric.color}`} />
+                </div>
+
+                {/* Big number */}
+                <div className="text-4xl lg:text-5xl font-bold tracking-tight text-primary mb-1">
+                  {isVisible ? <CountUpValue metric={metric} isVisible={isVisible} index={index} /> : <span className="opacity-0">0</span>}
+                </div>
+
+                <div className="mt-3 text-base font-semibold text-foreground">
+                  {metric.label}
+                </div>
+                <div className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  {metric.description}
+                </div>
+
+                {/* Animated progress bar */}
+                <div className="mt-5 h-1.5 bg-foreground/5 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${metric.barColor} rounded-full transition-all ease-out`}
+                    style={{
+                      width: isVisible ? metric.barWidth : "0%",
+                      transitionDuration: "2000ms",
+                      transitionDelay: `${index * 250 + 600}ms`,
+                    }}
+                  />
+                </div>
+
+                {/* Pulsing ring on hover */}
+                <div className="absolute -top-2 -right-2 w-20 h-20 rounded-full bg-primary/5 opacity-0 group-hover:opacity-100 group-hover:scale-150 transition-all duration-700 pointer-events-none" />
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

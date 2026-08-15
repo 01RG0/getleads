@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 
 const plans = [
   {
     name: "Starter",
-    description: "For SDRs and solo prospectors who need verified emails fast",
-    price: { monthly: 49, annual: 49 },
+    description: "For SDRs who need verified emails fast",
+    monthlyPrice: 49,
+    annualPrice: 39,
     features: [
       "2,500 enrichment credits/mo",
       "1 workspace",
@@ -20,8 +21,9 @@ const plans = [
   },
   {
     name: "Growth Pro",
-    description: "For RevOps teams running automated enrichment at scale",
-    price: { monthly: 149, annual: 149 },
+    description: "For RevOps teams running enrichment at scale",
+    monthlyPrice: 149,
+    annualPrice: 119,
     features: [
       "10,000 enrichment credits/mo",
       "MCP server for AI agents",
@@ -35,9 +37,10 @@ const plans = [
     popular: true,
   },
   {
-    name: "Agency Unlimited",
-    description: "For lead-gen agencies managing multiple client workspaces",
-    price: { monthly: 499, annual: 499 },
+    name: "Agency",
+    description: "For agencies managing multiple client workspaces",
+    monthlyPrice: 499,
+    annualPrice: 399,
     features: [
       "50,000 enrichment credits/mo",
       "Unlimited client sub-workspaces",
@@ -54,20 +57,40 @@ const plans = [
 ];
 
 export function PricingSection() {
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animatingPrice, setAnimatingPrice] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { setIsVisible(entry.isIntersecting); },
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleBilling = () => {
+    setAnimatingPrice(true);
+    setTimeout(() => {
+      setIsAnnual(!isAnnual);
+      setTimeout(() => setAnimatingPrice(false), 200);
+    }, 150);
+  };
 
   return (
-    <section id="pricing" className="relative py-32 lg:py-40 border-t border-foreground/10">
+    <section id="pricing" ref={sectionRef} className="relative py-32 lg:py-40 border-t border-border">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
-        <div className="max-w-3xl mb-20">
+        <div className="max-w-3xl mb-12">
           <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase block mb-6">
             Pricing
           </span>
-          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight text-foreground mb-6">
-            Simple, transparent
-            <br />
-            <span className="text-stroke">pricing</span>
+          <h2 className={`text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground mb-6 transition-all duration-700 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}>
+            Simple, transparent pricing
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl">
             Start with the workflow your team needs today. Expand enrichment, verification, and routing as your volume grows.
@@ -75,81 +98,92 @@ export function PricingSection() {
         </div>
 
         {/* Billing Toggle */}
-        <div className="flex items-center gap-4 mb-16">
-          <span
-            className={`text-sm transition-colors ${
-              !isAnnual ? "text-foreground" : "text-muted-foreground"
-            }`}
-          >
+        <div className={`flex items-center gap-4 mb-16 transition-all duration-700 delay-100 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}>
+          <span className={`text-sm font-medium transition-colors ${!isAnnual ? "text-foreground" : "text-muted-foreground"}`}>
             Monthly
           </span>
           <button
-            onClick={() => setIsAnnual(!isAnnual)}
-            className="relative w-14 h-7 bg-foreground/10 rounded-full p-1 transition-colors hover:bg-foreground/20"
+            type="button"
+            onClick={toggleBilling}
+            className="relative h-7 w-14 rounded-full bg-foreground/10 border border-foreground/10 transition-colors hover:bg-foreground/15"
           >
-            <div
-              className={`w-5 h-5 bg-foreground rounded-full transition-transform duration-300 ${
-                isAnnual ? "translate-x-7" : "translate-x-0"
-              }`}
-            />
+            <div className={`absolute top-1 h-5 w-5 rounded-full bg-primary shadow-lg transition-all duration-300 ${
+              isAnnual ? "left-8" : "left-1"
+            }`} />
           </button>
-          <span
-            className={`text-sm transition-colors ${
-              isAnnual ? "text-foreground" : "text-muted-foreground"
-            }`}
-          >
+          <span className={`text-sm font-medium transition-colors ${isAnnual ? "text-foreground" : "text-muted-foreground"}`}>
             Annual
           </span>
           {isAnnual && (
-            <span className="ml-2 px-2 py-1 bg-foreground text-primary-foreground text-xs font-mono">
-              Same rate monthly or annually
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#3D7A4E]/10 border border-[#3D7A4E]/20 text-[#3D7A4E] text-xs font-medium rounded-full animate-fadeIn">
+              <Sparkles className="w-3 h-3" />
+              Save 20%
             </span>
           )}
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-px bg-foreground/10">
-          {plans.map((plan, idx) => (
+        <div className="grid md:grid-cols-3 gap-6">
+          {plans.map((plan, index) => (
             <div
               key={plan.name}
-              className={`relative p-8 lg:p-12 bg-background ${
-                plan.popular ? "md:-my-4 md:py-12 lg:py-16 border-2 border-foreground" : ""
-              }`}
+              className={`relative p-8 lg:p-10 rounded-xl bg-card border card-elevated transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 ${
+                plan.popular ? "border-primary shadow-lg shadow-primary/10 md:-my-4 md:py-12 lg:py-14" : "border-border hover:border-primary/30"
+              } ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+              style={{ transitionDelay: `${index * 100 + 200}ms` }}
             >
               {plan.popular && (
-                <span className="absolute -top-3 left-8 px-3 py-1 bg-foreground text-primary-foreground text-xs font-mono uppercase tracking-widest">
+                <span className="absolute -top-3 left-8 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-medium uppercase tracking-widest rounded-full shadow-lg shadow-primary/20">
                   Most Popular
                 </span>
               )}
 
               {/* Plan Header */}
               <div className="mb-8">
-                <span className="font-mono text-xs text-muted-foreground">
-                  {String(idx + 1).padStart(2, "0")}
-                </span>
-                <h3 className="font-display text-3xl text-foreground mt-2">{plan.name}</h3>
+                <h3 className="text-2xl font-semibold text-foreground">{plan.name}</h3>
                 <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
               </div>
 
               {/* Price */}
-              <div className="mb-8 pb-8 border-b border-foreground/10">
-                {plan.price.monthly !== null ? (
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-display text-5xl lg:text-6xl text-foreground">
-                      ${isAnnual ? plan.price.annual : plan.price.monthly}
+              <div className="mb-8 pb-8 border-b border-border">
+                <div className="flex items-baseline gap-1">
+                  <span className={`text-5xl font-bold text-foreground transition-all duration-300 ${
+                    animatingPrice ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                  }`}>
+                    ${isAnnual ? plan.annualPrice : plan.monthlyPrice}
+                  </span>
+                  <span className="text-muted-foreground">/mo</span>
+                </div>
+                {isAnnual && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground line-through">
+                      ${plan.monthlyPrice}/mo
                     </span>
-                    <span className="text-muted-foreground">/month</span>
+                    <span className="text-xs font-medium text-[#3D7A4E] bg-[#3D7A4E]/10 px-2 py-0.5 rounded">
+                      Save ${(plan.monthlyPrice - plan.annualPrice) * 12}/yr
+                    </span>
                   </div>
-                ) : (
-                  <span className="font-display text-4xl text-foreground">Custom</span>
+                )}
+                {!isAnnual && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    or ${plan.annualPrice}/mo billed annually
+                  </p>
                 )}
               </div>
 
               {/* Features */}
               <ul className="space-y-4 mb-10">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <Check className="w-4 h-4 text-foreground mt-0.5 shrink-0" />
+                {plan.features.map((feature, fIndex) => (
+                  <li
+                    key={feature}
+                    className={`flex items-start gap-3 transition-all duration-500 ${
+                      isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
+                    }`}
+                    style={{ transitionDelay: `${index * 100 + fIndex * 50 + 400}ms` }}
+                  >
+                    <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                     <span className="text-sm text-muted-foreground">{feature}</span>
                   </li>
                 ))}
@@ -157,11 +191,11 @@ export function PricingSection() {
 
               {/* CTA */}
               <a
-                href={plan.name === "Agency Unlimited" ? "#cta" : "#pricing"}
-                className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${
+                href={plan.name === "Agency" ? "#cta" : "#pricing"}
+                className={`w-full py-4 rounded-lg flex items-center justify-center gap-2 text-sm font-medium btn-tactile group ${
                   plan.popular
-                    ? "bg-foreground text-primary-foreground hover:bg-foreground/90"
-                    : "border border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground/5"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_4px_16px_rgba(166,99,31,0.2)] hover:shadow-[0_8px_24px_rgba(166,99,31,0.3)]"
+                    : "border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 }`}
               >
                 {plan.cta}
@@ -172,13 +206,38 @@ export function PricingSection() {
         </div>
 
         {/* Bottom Note */}
-        <p className="mt-12 text-center text-sm text-muted-foreground">
-          All plans include GDPR/CCPA compliance logging, encrypted data at rest, and a 14-day bounce credit guarantee.{" "}
-          <a href="#" className="underline underline-offset-4 hover:text-foreground transition-colors">
-            Compare all features
-          </a>
-        </p>
+        <div className={`mt-16 text-center transition-all duration-700 delay-500 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}>
+          <p className="text-sm text-muted-foreground mb-4">
+            All plans include GDPR/CCPA compliance, encrypted data, and 14-day bounce guarantee.
+          </p>
+          <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3D7A4E]/100" />
+              No credit card required
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3D7A4E]/100" />
+              Cancel anytime
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3D7A4E]/100" />
+              100 free credits to start
+            </span>
+          </div>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+      `}</style>
     </section>
   );
 }

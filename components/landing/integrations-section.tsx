@@ -5,10 +5,16 @@ import { useEffect, useState, useRef } from "react";
 const integrations = [
   { name: "HubSpot", category: "CRM" },
   { name: "Salesforce", category: "CRM" },
-  { name: "REST API", category: "Universal endpoint" },
-  { name: "Claude Desktop", category: "MCP-compatible agent" },
-  { name: "ChatGPT", category: "MCP-compatible agent" },
-  { name: "Copilot", category: "MCP-compatible agent" },
+  { name: "Pipedrive", category: "CRM" },
+  { name: "Instantly", category: "Outreach" },
+  { name: "Smartlead", category: "Outreach" },
+  { name: "Apollo Sequences", category: "Outreach" },
+  { name: "Claude Desktop", category: "AI Agent" },
+  { name: "ChatGPT", category: "AI Agent" },
+  { name: "Microsoft Copilot", category: "AI Agent" },
+  { name: "REST API", category: "Developer" },
+  { name: "Webhooks", category: "Developer" },
+  { name: "Zapier", category: "Developer" },
 ];
 
 export function IntegrationsSection() {
@@ -18,7 +24,7 @@ export function IntegrationsSection() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        setIsVisible(entry.isIntersecting);
       },
       { threshold: 0.1 }
     );
@@ -42,12 +48,12 @@ export function IntegrationsSection() {
             <span className="w-8 h-px bg-foreground/30" />
           </span>
           <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-6">
-            Works with everything
+            Connects to your stack
             <br />
-            you already use.
+            in minutes.
           </h2>
           <p className="text-xl text-muted-foreground">
-            Connect CRM systems, REST endpoints, and MCP-compatible agents in one workflow.
+            Push verified contacts directly into the tools your team already uses. No CSV exports, no manual imports.
           </p>
         </div>
 
@@ -61,7 +67,7 @@ export function IntegrationsSection() {
               {integrations.map((integration) => (
                 <div
                   key={`${integration.name}-${setIndex}`}
-                  className="shrink-0 px-8 py-6 border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/[0.02] transition-all duration-300 group"
+                  className="shrink-0 px-8 py-6 border border-foreground/10 hover:border-primary/30 hover:bg-foreground/[0.02] transition-all duration-300 group"
                 >
                   <div className="text-lg font-medium group-hover:translate-x-1 transition-transform">
                     {integration.name}
@@ -82,7 +88,7 @@ export function IntegrationsSection() {
               {[...integrations].reverse().map((integration) => (
                 <div
                   key={`${integration.name}-reverse-${setIndex}`}
-                  className="shrink-0 px-8 py-6 border border-foreground/10 hover:border-foreground/30 hover:bg-foreground/[0.02] transition-all duration-300 group"
+                  className="shrink-0 px-8 py-6 border border-foreground/10 hover:border-primary/30 hover:bg-foreground/[0.02] transition-all duration-300 group"
                 >
                   <div className="text-lg font-medium group-hover:translate-x-1 transition-transform">
                     {integration.name}

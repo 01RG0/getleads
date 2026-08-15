@@ -21,3 +21,12 @@ build/
 npm-debug.log*
 pnpm-debug.log*
 .vercel
+
+.vercel
+
+# Generated artifacts
+tsconfig.tsbuildinfo
+skills-lock.json
+
+# Claude internal
+.claude/cli-swarm-log.jsonl

@@ -13,6 +13,8 @@ export function AnimatedTetrahedron() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const getColor = () => document.documentElement.classList.contains("dark") ? "255, 255, 255" : "0, 0, 0";
+
     const chars = "░▒▓█▀▄▌▐│─┤├┴┬╭╮╰╯";
     let time = 0;
 
@@ -147,9 +149,10 @@ export function AnimatedTetrahedron() {
       points.sort((a, b) => a.z - b.z);
 
       // Draw points
+      const rgb = getColor();
       points.forEach((point) => {
         const alpha = 0.15 + (point.z + 1.5) * 0.25;
-        ctx.fillStyle = `rgba(0, 0, 0, ${Math.min(alpha, 0.9)})`;
+        ctx.fillStyle = `rgba(${rgb}, ${Math.min(alpha, 0.9)})`;
         ctx.fillText(point.char, point.x, point.y);
       });
 

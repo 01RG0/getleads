@@ -55,7 +55,7 @@ export function FooterSection() {
               </a>
 
               <p className="text-muted-foreground leading-relaxed mb-8 max-w-xs">
-                The signal layer for revenue teams. Enrich, verify, and route every lead with confidence.
+                Find verified B2B emails and phone numbers. Waterfall enrichment across 15+ providers with guaranteed &lt;2% bounce rates.
               </p>
 
               {/* Social Links */}
@@ -107,7 +107,7 @@ export function FooterSection() {
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="w-2 h-2 rounded-full bg-[#3D7A4E]" />
               All systems operational
             </span>
           </div>

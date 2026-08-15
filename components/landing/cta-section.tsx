@@ -13,7 +13,7 @@ export function CtaSection() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        setIsVisible(entry.isIntersecting);
       },
       { threshold: 0.2 }
     );
@@ -34,16 +34,16 @@ export function CtaSection() {
     <section id="cta" ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
         <div
-          className={`relative border border-foreground transition-all duration-1000 ${
+          className={`relative border border-border rounded-lg transition-all duration-1000 ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
           onMouseMove={handleMouseMove}
         >
           {/* Spotlight effect */}
           <div
-            className="absolute inset-0 opacity-10 pointer-events-none transition-opacity duration-300"
+            className="absolute inset-0 opacity-10 pointer-events-none transition-opacity duration-300 rounded-lg"
             style={{
-              background: `radial-gradient(600px circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(0,0,0,0.15), transparent 40%)`
+              background: `radial-gradient(600px circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(166,99,31,0.15), transparent 40%)`
             }}
           />
 
@@ -51,31 +51,29 @@ export function CtaSection() {
             <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
               {/* Left content */}
               <div className="flex-1">
-                <h2 className="text-4xl lg:text-7xl font-display tracking-tight mb-8 leading-[0.95]">
-                  Stop losing leads
+                <h2 className="text-4xl lg:text-6xl font-semibold tracking-tight mb-6 leading-[0.95]">
+                  Your next 100 contacts
                   <br />
-                  to bad data.
+                  are on us.
                 </h2>
 
-                <p className="text-xl text-muted-foreground mb-12 leading-relaxed max-w-xl">
-                  Your first 100 verified contacts are free. See how waterfall enrichment and 3-stage verification turn your prospect lists into guaranteed-deliverable pipeline.
+                <p className="text-xl text-muted-foreground mb-10 leading-relaxed max-w-xl">
+                  Start with 100 free verified contacts. No credit card, no commitment. See why teams switch from Apollo and ZoomInfo.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-start gap-4">
-                  <Button
-                    asChild
-                    size="lg"
-                    className="bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group"
-                  >
-                    <a href="#pricing">
-                      Start free
-                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-                    </a>
-                  </Button>
-                </div>
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-14 text-base rounded-full group"
+                >
+                  <a href="#pricing">
+                    Start free
+                    <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  </a>
+                </Button>
 
-                <p className="text-sm text-muted-foreground mt-8 font-mono">
-                  No credit card required — cancel anytime.
+                <p className="text-sm text-muted-foreground mt-6">
+                  Setup takes 2 minutes. Cancel anytime.
                 </p>
               </div>
 
@@ -85,10 +83,6 @@ export function CtaSection() {
               </div>
             </div>
           </div>
-
-          {/* Decorative corner */}
-          <div className="absolute top-0 right-0 w-32 h-32 border-b border-l border-foreground/10" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 border-t border-r border-foreground/10" />
         </div>
       </div>
     </section>

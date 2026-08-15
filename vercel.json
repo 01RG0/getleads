@@ -3,5 +3,17 @@
   "buildCommand": "next build",
   "devCommand": "next dev",
   "installCommand": "pnpm install",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@leadscale-api-url",
+    "NEXT_PUBLIC_SUPABASE_URL": "@leadscale-supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@leadscale-supabase-anon-key",
+    "UPSTASH_REDIS_REST_URL": "@leadscale-upstash-url",
+    "UPSTASH_REDIS_REST_TOKEN": "@leadscale-upstash-token",
+    "DATABASE_URL": "@leadscale-database-url",
+    "DIRECT_URL": "@leadscale-direct-url",
+    "SUPABASE_SERVICE_ROLE_KEY": "@leadscale-supabase-service-role",
+    "NEXTAUTH_SECRET": "@leadscale-nextauth-secret",
+    "API_SECRET_KEY": "@leadscale-api-secret"
+  }
 }

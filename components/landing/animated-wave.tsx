@@ -13,6 +13,8 @@ export function AnimatedWave() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const getColor = () => document.documentElement.classList.contains("dark") ? "255, 255, 255" : "0, 0, 0";
+
     const chars = "·∘○◯◌●◉";
     let time = 0;
 
@@ -37,6 +39,7 @@ export function AnimatedWave() {
 
       const cols = Math.floor(rect.width / 20);
       const rows = Math.floor(rect.height / 20);
+      const rgb = getColor();
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
@@ -53,8 +56,7 @@ export function AnimatedWave() {
 
           const charIndex = Math.floor(normalized * (chars.length - 1));
           const alpha = 0.15 + normalized * 0.5;
-
-          ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+          ctx.fillStyle = `rgba(${rgb}, ${alpha})`;
           ctx.fillText(chars[charIndex], px, py);
         }
       }
