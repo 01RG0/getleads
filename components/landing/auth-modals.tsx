@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { X, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MeshGradient } from "@paper-design/shaders-react";
+import { createClient } from "@/utils/supabase/client";
 
-function PasswordInput({ id, label, name }: { id: string; label: string; name: string }) {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function PasswordInput({ id, label, name, autoComplete }: { id: string; label: string; name: string; autoComplete?: string }) {
   const [show, setShow] = useState(false);
   return (
     <div>
@@ -18,6 +21,8 @@ function PasswordInput({ id, label, name }: { id: string; label: string; name: s
           type={show ? "text" : "password"}
           id={id}
           name={name}
+          required
+          autoComplete={autoComplete}
           className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10"
         />
         <button
@@ -44,11 +49,25 @@ function GoogleIcon() {
   );
 }
 
-// ─── Sign In ───────────────────────────────────────────────────────────────────
+function ErrorMsg({ msg }: { msg: string }) {
+  if (!msg) return null;
+  return <p className="text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{msg}</p>;
+}
+
+function SuccessMsg({ msg }: { msg: string }) {
+  if (!msg) return null;
+  return <p className="text-green-300 text-xs bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2">{msg}</p>;
+}
+
+// ─── Sign In ──────────────────────────────────────────────────────────────────
 
 export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [forgotSent, setForgotSent] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
@@ -61,6 +80,57 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
     return () => window.removeEventListener("keydown", fn);
   }, []);
 
+  function handleClose() {
+    setIsExpanded(false);
+    setError("");
+    setShowForgot(false);
+    setForgotSent(false);
+  }
+
+  async function handleSignIn(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+
+    startTransition(async () => {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setError(error.message);
+      } else {
+        window.location.href = "/dashboard";
+      }
+    });
+  }
+
+  async function handleForgotPassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    const email = (e.currentTarget.elements.namedItem("forgot-email") as HTMLInputElement).value;
+
+    startTransition(async () => {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      if (error) {
+        setError(error.message);
+      } else {
+        setForgotSent(true);
+      }
+    });
+  }
+
+  async function handleGoogleSignIn() {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+  }
+
   const btnH = scrolled ? "h-8" : "h-9";
   const btnText = scrolled ? "text-xs px-4" : "text-sm px-5";
 
@@ -71,7 +141,6 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
           <motion.div
             layoutId="signin-bg"
             style={{ borderRadius: "24px" }}
-            // no `layout` — only layoutId drives the shared transition
             className="relative flex h-full w-full overflow-hidden bg-[#1C1712] transform-gpu will-change-transform"
           >
             <div className="h-full w-full overflow-y-auto">
@@ -80,6 +149,7 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
                 animate={{ opacity: 1 }}
                 className="relative py-8 z-10 min-h-full flex flex-col lg:flex-row w-full max-w-[1100px] mx-auto items-center p-6 sm:p-10 lg:p-16 gap-8 lg:gap-16"
               >
+                {/* Left */}
                 <div className="flex-1 flex flex-col justify-center space-y-3 w-full">
                   <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium text-white leading-none tracking-[-0.03em]">
                     Welcome back
@@ -112,52 +182,89 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
                     </div>
                   </div>
                 </div>
+
+                {/* Right — form */}
                 <div className="flex-1 w-full">
-                  <form className="space-y-4 sm:space-y-5">
-                    <div>
-                      <label htmlFor="si-email" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Email *</label>
-                      <input type="email" id="si-email" name="email" placeholder="you@company.com"
-                        className="w-full px-4 py-2.5 rounded-lg bg-white/10 border-0 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
-                    </div>
-                    <PasswordInput id="si-password" label="Password" name="password" />
-                    <div className="flex justify-end">
-                      <button type="button" className="text-xs text-white/50 hover:text-white transition-colors">Forgot password?</button>
-                    </div>
-                    <button type="submit" className="w-full px-8 py-2.5 rounded-full bg-white text-[#1C1712] font-medium hover:bg-white/90 transition-colors h-10">
-                      Sign in
-                    </button>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-px bg-white/20" />
-                      <span className="text-xs text-white/40">or</span>
-                      <div className="flex-1 h-px bg-white/20" />
-                    </div>
-                    <button type="button" className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-full bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition-colors h-10">
-                      <GoogleIcon /> Continue with Google
-                    </button>
-                    <p className="text-center text-sm text-white/50 pt-2">
-                      No account?{" "}
-                      <button type="button" onClick={() => setIsExpanded(false)} className="text-white font-medium hover:underline">Start free</button>
-                    </p>
-                  </form>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {showForgot ? (
+                      <motion.div key="forgot" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+                        <div>
+                          <h3 className="text-xl font-medium text-white mb-1">Reset your password</h3>
+                          <p className="text-sm text-white/60">We&apos;ll send a reset link to your email.</p>
+                        </div>
+                        {forgotSent ? (
+                          <SuccessMsg msg="Check your email for the reset link." />
+                        ) : (
+                          <form onSubmit={handleForgotPassword} className="space-y-4">
+                            <ErrorMsg msg={error} />
+                            <div>
+                              <label htmlFor="forgot-email" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Email *</label>
+                              <input type="email" id="forgot-email" name="forgot-email" required placeholder="you@company.com"
+                                className="w-full px-4 py-2.5 rounded-lg bg-white/10 border-0 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
+                            </div>
+                            <button type="submit" disabled={isPending}
+                              className="w-full px-8 py-2.5 rounded-full bg-white text-[#1C1712] font-medium hover:bg-white/90 transition-colors h-10 disabled:opacity-60 flex items-center justify-center gap-2">
+                              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                              Send reset link
+                            </button>
+                          </form>
+                        )}
+                        <button type="button" onClick={() => { setShowForgot(false); setError(""); setForgotSent(false); }}
+                          className="text-sm text-white/50 hover:text-white transition-colors">
+                          ← Back to sign in
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <motion.form key="signin" onSubmit={handleSignIn} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4 sm:space-y-5">
+                        <ErrorMsg msg={error} />
+                        <div>
+                          <label htmlFor="si-email" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Email *</label>
+                          <input type="email" id="si-email" name="email" required autoComplete="email" placeholder="you@company.com"
+                            className="w-full px-4 py-2.5 rounded-lg bg-white/10 border-0 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
+                        </div>
+                        <PasswordInput id="si-password" label="Password" name="password" autoComplete="current-password" />
+                        <div className="flex justify-end">
+                          <button type="button" onClick={() => { setShowForgot(true); setError(""); }}
+                            className="text-xs text-white/50 hover:text-white transition-colors">
+                            Forgot password?
+                          </button>
+                        </div>
+                        <button type="submit" disabled={isPending}
+                          className="w-full px-8 py-2.5 rounded-full bg-white text-[#1C1712] font-medium hover:bg-white/90 transition-colors h-10 disabled:opacity-60 flex items-center justify-center gap-2">
+                          {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                          Sign in
+                        </button>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-px bg-white/20" />
+                          <span className="text-xs text-white/40">or</span>
+                          <div className="flex-1 h-px bg-white/20" />
+                        </div>
+                        <button type="button" onClick={handleGoogleSignIn}
+                          className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-full bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition-colors h-10">
+                          <GoogleIcon /> Continue with Google
+                        </button>
+                        <p className="text-center text-sm text-white/50 pt-2">
+                          No account?{" "}
+                          <button type="button" onClick={handleClose} className="text-white font-medium hover:underline">Start free</button>
+                        </p>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             </div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 2 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              layout={false}
-              transition={{ duration: 0.15, delay: 0.05 }}
-              className="absolute inset-0 overflow-hidden pointer-events-none"
-              style={{ borderRadius: "24px" }}
+              initial={{ opacity: 0, scale: 2 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              layout={false} transition={{ duration: 0.15, delay: 0.05 }}
+              className="absolute inset-0 overflow-hidden pointer-events-none" style={{ borderRadius: "24px" }}
             >
               <MeshGradient speed={1} colors={["#2A1F15", "#1C1410", "#332518", "#0E0A06"]}
                 distortion={0.8} swirl={0.1} grainMixer={0} grainOverlay={0}
                 style={{ height: "100%", width: "100%" }} />
             </motion.div>
 
-            <motion.button onClick={() => setIsExpanded(false)}
+            <motion.button onClick={handleClose}
               className="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center text-white hover:bg-white/10 rounded-full transition-colors"
               aria-label="Close">
               <X className="h-5 w-5" />
@@ -175,39 +282,33 @@ export function SignInCTA({ scrolled }: { scrolled?: boolean }) {
           <motion.div
             className="inline-block relative cursor-pointer"
             onClick={() => setIsExpanded(true)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
-            {/*
-              layoutId ONLY — no `layout` prop.
-              `layout` caused Framer Motion to animate unrelated page elements (nav logo).
-              Explicit height via btnH class ensures the absolute fill covers the button.
-            */}
             <motion.div
               layoutId="signin-bg"
               style={{ borderRadius: "100px" }}
               className={`absolute inset-0 bg-[#1C1712] border border-white/20 transform-gpu will-change-transform ${btnH}`}
             />
-            {/* Explicit h-* so inline-block parent gets correct height for absolute child */}
             <div className={`relative flex items-center text-[#FAF8F5] font-medium tracking-[-0.01em] select-none ${btnH} ${btnText}`}>
               Sign in
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
       {mounted && createPortal(panel, document.body)}
     </>
   );
 }
 
-// ─── Start Free ────────────────────────────────────────────────────────────────
+// ─── Start Free ───────────────────────────────────────────────────────────────
 
 export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
@@ -219,6 +320,47 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
   }, []);
+
+  function handleClose() {
+    setIsExpanded(false);
+    setError("");
+    setSuccess("");
+  }
+
+  async function handleSignUp(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const fullName = (form.elements.namedItem("name") as HTMLInputElement).value;
+
+    startTransition(async () => {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) {
+        setError(error.message);
+      } else {
+        setSuccess("Check your email to confirm your account, then sign in.");
+      }
+    });
+  }
+
+  async function handleGoogleSignUp() {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+  }
 
   const btnH = scrolled ? "h-8" : "h-9";
   const btnText = scrolled ? "text-xs px-4" : "text-sm px-5";
@@ -238,6 +380,7 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
                 animate={{ opacity: 1 }}
                 className="relative py-8 z-10 min-h-full flex flex-col lg:flex-row w-full max-w-[1100px] mx-auto items-center p-6 sm:p-10 lg:p-16 gap-8 lg:gap-16"
               >
+                {/* Left */}
                 <div className="flex-1 flex flex-col justify-center space-y-3 w-full">
                   <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium text-white leading-none tracking-[-0.03em]">
                     Start for free
@@ -270,73 +413,84 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
                     </div>
                   </div>
                 </div>
+
+                {/* Right — form */}
                 <div className="flex-1 w-full">
-                  <form className="space-y-4 sm:space-y-5">
-                    <div>
-                      <label htmlFor="sf-name" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Full Name *</label>
-                      <input type="text" id="sf-name" name="name"
-                        className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
-                    </div>
-                    <div>
-                      <label htmlFor="sf-email" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Work Email *</label>
-                      <input type="email" id="sf-email" name="email"
-                        className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <div className="flex-1">
-                        <label htmlFor="sf-company" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Company</label>
-                        <input type="text" id="sf-company" name="company"
+                  {success ? (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                      <SuccessMsg msg={success} />
+                      <p className="text-sm text-white/60">Already confirmed?{" "}
+                        <button type="button" onClick={handleClose} className="text-white font-medium hover:underline">Sign in</button>
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <form onSubmit={handleSignUp} className="space-y-4 sm:space-y-5">
+                      <ErrorMsg msg={error} />
+                      <div>
+                        <label htmlFor="sf-name" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Full Name *</label>
+                        <input type="text" id="sf-name" name="name" required autoComplete="name"
                           className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
                       </div>
-                      <div className="sm:w-32 w-full">
-                        <label htmlFor="sf-size" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Team Size</label>
-                        <select id="sf-size" name="size"
-                          className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 appearance-none cursor-pointer text-sm h-10"
-                          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 0.75rem center", backgroundSize: "1rem" }}>
-                          <option value="1-10">1-10</option>
-                          <option value="11-50">11-50</option>
-                          <option value="51-200">51-200</option>
-                          <option value="201-500">201-500</option>
-                          <option value="501+">501+</option>
-                        </select>
+                      <div>
+                        <label htmlFor="sf-email" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Work Email *</label>
+                        <input type="email" id="sf-email" name="email" required autoComplete="email"
+                          className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
                       </div>
-                    </div>
-                    <PasswordInput id="sf-password" label="Password" name="password" />
-                    <button type="submit" className="w-full px-8 py-2.5 rounded-full bg-white text-[#7A3F0E] font-medium hover:bg-white/90 transition-colors h-10">
-                      Create account
-                    </button>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-px bg-white/20" />
-                      <span className="text-xs text-white/40">or</span>
-                      <div className="flex-1 h-px bg-white/20" />
-                    </div>
-                    <button type="button" className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-full bg-[#00000033] text-white text-sm font-medium hover:bg-[#00000050] transition-colors h-10">
-                      <GoogleIcon /> Continue with Google
-                    </button>
-                    <p className="text-center text-sm text-white/50 pt-2">
-                      Already have an account?{" "}
-                      <button type="button" onClick={() => setIsExpanded(false)} className="text-white font-medium hover:underline">Sign in</button>
-                    </p>
-                  </form>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                          <label htmlFor="sf-company" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Company</label>
+                          <input type="text" id="sf-company" name="company" autoComplete="organization"
+                            className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 text-sm h-10" />
+                        </div>
+                        <div className="sm:w-32 w-full">
+                          <label htmlFor="sf-size" className="block text-[10px] font-mono text-white/70 mb-2 tracking-[0.5px] uppercase">Team Size</label>
+                          <select id="sf-size" name="size"
+                            className="w-full px-4 py-2.5 rounded-lg bg-[#00000033] border-0 text-white focus:outline-none focus:ring-2 focus:ring-white/20 appearance-none cursor-pointer text-sm h-10"
+                            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 0.75rem center", backgroundSize: "1rem" }}>
+                            <option value="1-10">1-10</option>
+                            <option value="11-50">11-50</option>
+                            <option value="51-200">51-200</option>
+                            <option value="201-500">201-500</option>
+                            <option value="501+">501+</option>
+                          </select>
+                        </div>
+                      </div>
+                      <PasswordInput id="sf-password" label="Password" name="password" autoComplete="new-password" />
+                      <button type="submit" disabled={isPending}
+                        className="w-full px-8 py-2.5 rounded-full bg-white text-[#7A3F0E] font-medium hover:bg-white/90 transition-colors h-10 disabled:opacity-60 flex items-center justify-center gap-2">
+                        {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Create account
+                      </button>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-px bg-white/20" />
+                        <span className="text-xs text-white/40">or</span>
+                        <div className="flex-1 h-px bg-white/20" />
+                      </div>
+                      <button type="button" onClick={handleGoogleSignUp}
+                        className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-full bg-[#00000033] text-white text-sm font-medium hover:bg-[#00000050] transition-colors h-10">
+                        <GoogleIcon /> Continue with Google
+                      </button>
+                      <p className="text-center text-sm text-white/50 pt-2">
+                        Already have an account?{" "}
+                        <button type="button" onClick={handleClose} className="text-white font-medium hover:underline">Sign in</button>
+                      </p>
+                    </form>
+                  )}
                 </div>
               </motion.div>
             </div>
 
             <motion.div
-              initial={{ opacity: 0, scale: 2 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              layout={false}
-              transition={{ duration: 0.15, delay: 0.05 }}
-              className="absolute inset-0 overflow-hidden pointer-events-none"
-              style={{ borderRadius: "24px" }}
+              initial={{ opacity: 0, scale: 2 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              layout={false} transition={{ duration: 0.15, delay: 0.05 }}
+              className="absolute inset-0 overflow-hidden pointer-events-none" style={{ borderRadius: "24px" }}
             >
               <MeshGradient speed={1} colors={["#C47A2A", "#7A3F0E", "#A6631F", "#5C2E08"]}
                 distortion={0.8} swirl={0.1} grainMixer={0} grainOverlay={0}
                 style={{ height: "100%", width: "100%" }} />
             </motion.div>
 
-            <motion.button onClick={() => setIsExpanded(false)}
+            <motion.button onClick={handleClose}
               className="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center text-white hover:bg-white/10 rounded-full transition-colors"
               aria-label="Close">
               <X className="h-5 w-5" />
@@ -354,9 +508,7 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
           <motion.div
             className="inline-block relative cursor-pointer"
             onClick={() => setIsExpanded(true)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
             <motion.div
@@ -370,7 +522,6 @@ export function StartFreeCTA({ scrolled }: { scrolled?: boolean }) {
           </motion.div>
         )}
       </AnimatePresence>
-
       {mounted && createPortal(panel, document.body)}
     </>
   );
