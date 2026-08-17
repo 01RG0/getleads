@@ -43,6 +43,9 @@ export const config = {
     zerobounceApiKey: optional('ZEROBOUNCE_API_KEY'),
     scraperApiKey: optional('SCRAPERAPI_KEY'),
     numverifyApiKey: optional('NUMVERIFY_API_KEY'),
+    serperApiKey: optional('SERPER_API_KEY'),
+    huntApiKey: optional('HUNT_API_KEY'),
+    apolloApiKey: optional('APOLLO_API_KEY'),
   },
 } as const
 
