@@ -1,4 +1,7 @@
 import { prisma } from '../../lib/db.js'
+import { redis } from '../../lib/redis.js'
+import { getBreaker } from '../../lib/circuit-breaker.js'
+import { ServiceUnavailableError } from '../../lib/errors.js'
 import { callOpenAICompat } from './providers/openai-compat.js'
 import type { LLMRequest, LLMResponse } from './types.js'
 
@@ -16,7 +19,22 @@ export async function routeLLM(req: LLMRequest): Promise<LLMResponse> {
 
   for (const provider of providers) {
     try {
-      const result = await callOpenAICompat(provider, req)
+      // RPM guard using Redis sliding counter
+      if (provider.rateLimitRpm) {
+        const rpmKey = `llm:rpm:${provider.id}`
+        const count = await redis.incr(rpmKey)
+        if (count === 1) await redis.expire(rpmKey, 60)
+        if (count > provider.rateLimitRpm) {
+          console.warn(`[llm/router] RPM limit reached for "${provider.name}", skipping`)
+          continue
+        }
+      }
+
+      const result = await getBreaker(provider.name, {
+        requestTimeoutMs: 30000,
+        failureThreshold: 3,
+        timeoutMs: 120000,
+      }).execute(() => callOpenAICompat(provider, req))
 
       // Write usage log fire-and-forget to avoid blocking the caller
       prisma.aiUsageLog
@@ -36,6 +54,11 @@ export async function routeLLM(req: LLMRequest): Promise<LLMResponse> {
 
       return result
     } catch (err) {
+      if (err instanceof ServiceUnavailableError) {
+        console.warn(`[llm/router] Circuit open for "${provider.name}", skipping`)
+        errors.push(`${provider.name}: circuit open`)
+        continue
+      }
       const message = err instanceof Error ? err.message : String(err)
       console.warn(`[llm/router] Provider "${provider.name}" failed: ${message}`)
       errors.push(`${provider.name}: ${message}`)

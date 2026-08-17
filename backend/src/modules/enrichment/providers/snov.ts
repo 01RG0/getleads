@@ -1,3 +1,4 @@
+import { getBreaker } from '../../../lib/circuit-breaker.js'
 import { config } from '../../../config.js'
 import { getCache, setCache } from '../../../lib/redis.js'
 import type { EnrichmentParams, EnrichmentResult } from './base.js'
@@ -36,7 +37,7 @@ export async function snovEnrich(params: EnrichmentParams): Promise<EnrichmentRe
     const token = await getSnovAccessToken()
     if (!token) return null
 
-    const res = await fetch('https://api.snov.io/v2/domain-search', {
+    const res = await getBreaker('snov', { requestTimeoutMs: 8000 }).execute(() => fetch('https://api.snov.io/v2/domain-search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -46,7 +47,7 @@ export async function snovEnrich(params: EnrichmentParams): Promise<EnrichmentRe
         last_name: params.lastName,
         limit: 1,
       }),
-    })
+    }))
 
     if (!res.ok) return null
 

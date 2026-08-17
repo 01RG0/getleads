@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq'
-import { redisConnection } from '../../lib/queue.js'
+import { enrichmentDLQ, redisConnection } from '../../lib/queue.js'
 import { waterfallEnrich } from './service.js'
 
 interface EnrichmentJobData {
@@ -8,8 +8,12 @@ interface EnrichmentJobData {
     lastName: string
     domain: string
     companyName?: string
+    linkedinUrl?: string
+    includePhone?: boolean
+    forceReverify?: boolean
   }>
   workspaceId: string
+  requestId?: string
 }
 
 export function startEnrichmentWorker(): Worker {
@@ -26,6 +30,9 @@ export function startEnrichmentWorker(): Worker {
             lastName: contact.lastName,
             domain: contact.domain,
             companyName: contact.companyName,
+            linkedinUrl: contact.linkedinUrl,
+            includePhone: contact.includePhone,
+            forceReverify: contact.forceReverify,
             workspaceId,
           })
           results.push({
@@ -57,12 +64,21 @@ export function startEnrichmentWorker(): Worker {
     console.log(`[EnrichmentWorker] Job ${job.id} completed`)
   })
 
-  worker.on('failed', (job, err) => {
+  worker.on('failed', async (job, err) => {
     console.error(`[EnrichmentWorker] Job ${job?.id} failed:`, err.message)
+
+    if (job && job.attemptsMade >= (job.opts?.attempts ?? 5)) {
+      await enrichmentDLQ.add('dlq:enrichment', {
+        originalJobId: job.id,
+        data: job.data,
+        failedReason: err.message,
+        failedAt: new Date().toISOString(),
+      })
+    }
   })
 
   worker.on('error', (err) => {
-    console.error('[EnrichmentWorker] Worker error:', err)
+    console.error('[EnrichmentWorker] Unhandled error:', err.stack)
   })
 
   return worker

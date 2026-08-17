@@ -26,4 +26,5 @@ export interface EnrichmentParams {
   lastName: string
   domain: string
   companyName?: string
+  linkedinUrl?: string
 }

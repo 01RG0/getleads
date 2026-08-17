@@ -1,3 +1,4 @@
+import { getBreaker } from '../../../lib/circuit-breaker.js'
 import { config } from '../../../config.js'
 import type { CompanyData, EnrichmentParams, EnrichmentResult } from './base.js'
 
@@ -16,17 +17,19 @@ export async function pdlEnrich(params: EnrichmentParams): Promise<EnrichmentRes
     if (params.companyName) body.company = params.companyName
     if (params.domain) body.company_domain = params.domain
 
-    const res = await fetch(PDL_PERSON_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Api-Key': pdlApiKey,
-      },
-      body: JSON.stringify({
-        params: body,
-        required: 'emails',
+    const res = await getBreaker('pdl', { requestTimeoutMs: 10000 }).execute(() =>
+      fetch(PDL_PERSON_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': pdlApiKey,
+        },
+        body: JSON.stringify({
+          params: body,
+          required: 'emails',
+        }),
       }),
-    })
+    )
 
     if (!res.ok) return null
 

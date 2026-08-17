@@ -815,3 +815,169 @@ Queries Google, Bing, Yahoo, Ask, Baidu, Dogpile, LinkedIn, Twitter, GitHub, Red
 - Exploits password reset flows to extract masked phone digits from an email
 - Python, BeautifulSoup + Requests
 - Note: Effectiveness degraded since 2022 as platforms added protections
+
+---
+
+## 21. 2025-2026 New Entrants (Research Sweep — August 2026)
+
+> Tools below were not present in any prior section. All confirmed against live GitHub. Star counts as of Aug 17 2026.
+
+---
+
+### 21.1 asiifdev/business-leads-ai-automation — "Prospex" (165 stars, MIT)
+
+> **Repo:** [`asiifdev/business-leads-ai-automation`](https://github.com/asiifdev/business-leads-ai-automation) · **Stars:** 165 · **License:** MIT · **Updated:** Jul 29 2026 · **Stack:** Next.js 16, NestJS 10, PostgreSQL 16, Redis, Docker Compose
+
+Self-described as "Apollo.io + Instantly.ai — open-source, self-hosted, and free." The most complete open-source lead platform found in this sweep.
+
+**Capabilities:**
+- Google Maps scraper with Bayesian-averaged rating, GPS coordinates, incremental progress reporting
+- Multi-channel AI outreach generation: email, WhatsApp, Instagram DM, LinkedIn, cold call scripts — one prospect, five channels in a single pass
+- Built-in CRM pipeline: New → Contacted → Replied → Won/Lost with conversion funnel analytics
+- Multi-query batch campaigns with real-time tracking
+- REST API with Swagger docs
+- Supports OpenAI, OpenRouter, and local Ollama models (zero cloud cost path)
+
+**LeadScale integration:** Deploy as a self-hosted enrichment + outreach layer. Use its Google Maps scraper as a direct replacement for `omkarcloud/google-maps-scraper` (Section 17) with the bonus of multi-channel outreach copy generation baked in. Feed its REST API from the GetLeads campaign queue.
+
+---
+
+### 21.2 tinyfish-io/agentql — Natural Language Web Scraper (1,500 stars, MIT)
+
+> **Repo:** [`tinyfish-io/agentql`](https://github.com/tinyfish-io/agentql) · **Stars:** 1,500 · **License:** MIT · **Updated:** Aug 17 2026 · **SDKs:** Python, JavaScript
+
+AgentQL replaces CSS/XPath selectors with natural language queries. A scraper written with AgentQL survives site redesigns without code changes.
+
+**Key advantages over Scrapling/crawl4ai for LeadScale:**
+
+| Feature | Scrapling | crawl4ai | AgentQL |
+| :--- | :--- | :--- | :--- |
+| Selector language | CSS / XPath | CSS / XPath | Natural language |
+| Self-healing on redesign | Adaptive fingerprinting | No | Yes (semantic matching) |
+| Works behind auth | No | No | **Yes** |
+| Playwright integration | Yes | Yes | Yes (native) |
+| LangChain integration | No | Partial | **Yes** |
+| Best for | Bot-protected sites | LLM markdown output | **Authenticated + volatile sites** |
+
+**Usage pattern:**
+
+```python
+from agentql import wrap
+from playwright.sync_api import sync_playwright
+
+QUERY = """
+{
+    contacts[] {
+        name
+        title
+        email
+        phone
+    }
+}
+"""
+
+with sync_playwright() as playwright:
+    browser = playwright.chromium.launch()
+    page = wrap(browser.new_page())
+    page.goto("https://company.com/team")
+    data = page.query_data(QUERY)
+    print(data["contacts"])  # structured list, no CSS selectors needed
+```
+
+**LeadScale integration:** Use as the scraping engine for company `/team`, `/about`, and `/contact` pages where employee names + emails appear in volatile layouts. Position in the enrichment waterfall between Scrapling (bot-protected) and theHarvester (domain sweep).
+
+---
+
+### 21.3 getcargohq/cargo-skills — AI Agent GTM Toolkit (15 stars, MIT)
+
+> **Repo:** [`getcargohq/cargo-skills`](https://github.com/getcargohq/cargo-skills) · **Stars:** 15 · **License:** MIT · **Updated:** Aug 17 2026
+
+17 skills packaged for Claude Code, Codex, and Cursor agents to execute GTM workflows. New accounts receive 100 free credits (~5,000 leads sourced or ~1,000 verified-email enrichments).
+
+**Skills relevant to LeadScale:**
+
+| Skill | What it does |
+| :--- | :--- |
+| Email finder + verification | Waterfall across 50 data providers, returns verified address |
+| Phone number lookup | Direct dial enrichment |
+| Company enrichment | Size, funding stage, tech stack, employee count |
+| LinkedIn profile resolution | Name + company → LinkedIn URL + title |
+| Buying signal: job change | Detects when target contact changes employer |
+| Buying signal: funding round | Alerts when target company raises capital |
+| Buying signal: tech-intent | Detects new tech adoption signals |
+| CRM sync | Push enriched leads to HubSpot, Salesforce, Pipedrive (138+ integrations) |
+
+**LeadScale integration:** Wire cargo-skills as the AI-agent-native enrichment layer when running Claude-driven prospecting workflows from the LeadScale MCP server. Cargo provides the data actions; Claude provides the reasoning about who to enrich next.
+
+---
+
+### 21.4 meysam81/trawl — Free Hunter.io Alternative Chrome Extension (5 stars, MIT)
+
+> **Repo:** [`meysam81/trawl`](https://github.com/meysam81/trawl) · **Stars:** 5 · **License:** MIT · **Updated:** Aug 14 2026
+
+Browser extension that extracts, validates, and exports emails from any page — fully offline, zero accounts, no usage limits.
+
+**Extraction pipeline (all local, no API calls):**
+1. Decodes obfuscation patterns, HTML entities, `mailto:` links, and JSON-LD structured data
+2. Detects contact pages and auto-generates email candidates from names on the page
+3. MX record validation + DNS verification + disposable domain detection + confidence scoring
+4. Exports as CSV, JSON, or vCard; clipboard copy with formula injection protection
+
+**Why it matters:** Every other email discovery method in this doc requires either a Python environment, API key, or remote server. Trawl is the zero-infrastructure fallback for manual prospecting sessions — install in Chrome, visit target site, export contacts. Positioned as a human-in-the-loop enrichment tool for the GetLeads browser extension roadmap.
+
+---
+
+### 21.5 vanshyadav1408/Omentir — Open-Source LinkedIn Automation Platform (22 stars, MIT)
+
+> **Repo:** [`vanshyadav1408/Omentir`](https://github.com/vanshyadav1408/Omentir) · **Stars:** 22 · **License:** MIT · **Updated:** Aug 17 2026 · **Stack:** Firebase, Gemini/Vertex AI, Unipile
+
+Open-source alternative to HeyReach and Gojiberry. Manages the full LinkedIn outreach lifecycle.
+
+**Capabilities:**
+- LinkedIn prospect discovery and qualification (filters by title, company, location)
+- AI-generated contextual connection requests and follow-up messages (Claude, ChatGPT, Grok compatible)
+- Human-paced campaign automation (rate-limited to avoid LinkedIn flags)
+- Reply inbox management and tracking
+- Built-in **MCP Server + REST API** — AI agents can call Omentir tools directly
+- Self-hostable: set `RUN_LOCALLY=TRUE` to strip billing/marketing; deploy on own Firebase + Gemini + Unipile accounts
+
+**LeadScale integration:** Omentir's MCP server slots into the LeadScale MCP layer. After enrichment identifies a high-score lead, route to Omentir's MCP `send_connection_request` and `draft_message` tools for automated LinkedIn outreach without leaving the Claude agent workflow.
+
+---
+
+### 21.6 themineworks/mcp-server — 31-Tool B2B Data MCP Server (MIT)
+
+> **Repo:** [`themineworks/mcp-server`](https://github.com/themineworks/mcp-server) · **License:** MIT · **Works with:** Claude Desktop, Cursor, Windsurf
+
+The most comprehensive all-in-one B2B data MCP server found in this sweep. 31 tools across 7 categories:
+
+| Category | Tools |
+| :--- | :--- |
+| **People & B2B Leads** | B2B prospect search, website contact extraction, LinkedIn profile fetch, employee discovery, email verification |
+| **Companies & Diligence** | GitHub repo analysis, company LinkedIn data, SEC filing search, Crunchbase funding research, LEI lookups |
+| **Jobs & Recruiting** | LinkedIn candidate sourcing, ATS job scraping, cross-platform job search |
+| **Property & Local** | Zillow/Redfin/Realtor.com listings, Google Maps business search |
+| **Reviews & Social** | Reddit scraping, Trustpilot scraping |
+| **Research & Public Data** | Academic papers, federal grants, campaign finance, federal contracts, UK company records |
+| **Utility** | Async results retrieval |
+
+**LeadScale integration:** Install as a sidecar MCP server next to the LeadScale MCP. Use the "People & B2B Leads" and "Companies & Diligence" categories for enrichment. The SEC filings + Crunchbase + LEI combination in a single MCP call replaces three separate API calls in the current enrichment waterfall.
+
+---
+
+### 21.7 Anonym0usWork1221/GMapsScraper — Multi-Threaded Google Maps Scraper (69 stars, MIT)
+
+> **Repo:** [`Anonym0usWork1221/GMapsScraper`](https://github.com/Anonym0usWork1221/GMapsScraper) · **Stars:** 69 · **License:** MIT · **Language:** Python · **Last release:** Feb 2024
+
+No-API-key Google Maps scraper using `undetected-chromedriver` with multithreading. Distinct from `omkarcloud/google-maps-scraper` (Section 17) in its approach: thread-count is configurable, making it faster for bulk queries on VPS hardware.
+
+**Data fields (15+):** name, rating, review count, price level, category, address, hours, phone, website, menu link, photos, GPS coordinates, cover images
+
+**Advanced mode adds:** email addresses, Facebook, Instagram, Twitter, YouTube, LinkedIn links (crawls the business website automatically)
+
+**LeadScale integration:** Use as a free alternative to the Apify `renzomacar/google-maps-businesses` actor (Section 11.2) for self-hosted Google Maps bulk scraping. Configure `-w 8` threads with residential proxy rotation for sustained crawls. Advanced mode email extraction replaces one Apify `nexgendata/contact-info-scraper` call per lead.
+
+```bash
+# Example: scrape "plumbers in Chicago" with 8 threads, advanced email extraction
+python gmaps_scraper.py -q "plumbers in Chicago" -n 500 -w 8 --advanced -o leads.csv
+```

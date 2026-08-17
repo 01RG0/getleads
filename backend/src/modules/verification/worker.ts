@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq'
-import { redisConnection } from '../../lib/queue.js'
+import { redisConnection, verificationDLQ } from '../../lib/queue.js'
 import { verifyEmail } from './service.js'
 import { config } from '../../config.js'
 
@@ -16,6 +16,11 @@ export function startVerificationWorker(): Worker {
       const apiKeys = {
         mailcheck: config.enrichment.mailcheckApiKey || undefined,
         zerobounce: config.enrichment.zerobounceApiKey || undefined,
+        millionverifier: config.enrichment.millionverifierApiKey || undefined,
+        abstractapi: config.enrichment.abstractapiEmailKey || undefined,
+        neverbounce: config.enrichment.neverbouncApiKey || undefined,
+        truemailHost: config.enrichment.truemailHost || undefined,
+        truemailToken: config.enrichment.truemailToken || undefined,
       }
 
       const results = []
@@ -42,12 +47,21 @@ export function startVerificationWorker(): Worker {
     console.log(`[VerificationWorker] Job ${job.id} completed`)
   })
 
-  worker.on('failed', (job, err) => {
+  worker.on('failed', async (job, err) => {
     console.error(`[VerificationWorker] Job ${job?.id} failed:`, err.message)
+
+    if (job && job.attemptsMade >= (job.opts?.attempts ?? 5)) {
+      await verificationDLQ.add('dlq:verification', {
+        originalJobId: job.id,
+        data: job.data,
+        failedReason: err.message,
+        failedAt: new Date().toISOString(),
+      })
+    }
   })
 
   worker.on('error', (err) => {
-    console.error('[VerificationWorker] Worker error:', err)
+    console.error('[VerificationWorker] Unhandled error:', err.stack)
   })
 
   return worker

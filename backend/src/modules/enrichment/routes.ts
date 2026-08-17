@@ -1,8 +1,11 @@
 import { randomUUID } from 'crypto'
 import type { FastifyInstance } from 'fastify'
 import { prisma } from '../../lib/db.js'
+import { getCache, deleteCache } from '../../lib/redis.js'
+import { enrichmentQueue } from '../../lib/queue.js'
 import { apiKeyPreHandler } from '../tenancy/middleware/apiKey.js'
-import { waterfallEnrich } from './service.js'
+import { buildCacheKey, waterfallEnrich } from './service.js'
+import type { EnrichmentResult } from './providers/base.js'
 
 interface EnrichPersonBody {
   first_name: string
@@ -51,7 +54,51 @@ export default async function enrichmentRoutes(app: FastifyInstance): Promise<vo
         })
       }
 
-      // Deduct 1 credit
+      const { linkedin_url, include_phone, force_reverify } = request.body
+
+      // force_reverify: bust the cache so the waterfall runs fresh
+      const cacheKey = buildCacheKey(first_name, last_name, domain)
+      if (force_reverify) await deleteCache(cacheKey)
+
+      // Check cache before touching credits — cached hits cost nothing
+      const cachedResult = await getCache<EnrichmentResult>(cacheKey)
+
+      if (cachedResult) {
+        // Cache hit — free, return synchronously
+        const workspace = await prisma.workspace.findUnique({
+          where: { id: request.workspaceId },
+          select: { creditBalance: true },
+        })
+        return {
+          success: true,
+          data: {
+            first_name: cachedResult.firstName ?? first_name,
+            last_name: cachedResult.lastName ?? last_name,
+            job_title: cachedResult.jobTitle,
+            email: cachedResult.email ?? null,
+            email_confidence_score: cachedResult.email ? +(cachedResult.confidence * 100).toFixed(1) : null,
+            phone: cachedResult.phone ?? null,
+            linkedin_url: cachedResult.linkedinUrl ?? null,
+            company: cachedResult.company ? {
+              name: cachedResult.company.name,
+              domain: cachedResult.company.domain,
+              employee_count: cachedResult.company.employeeCount,
+              industry: cachedResult.company.industry,
+              country: cachedResult.company.country,
+              city: cachedResult.company.city,
+            } : null,
+            provenance: { data_source: cachedResult.dataSource, waterfall_tier: 0, cached: true },
+          },
+          meta: {
+            request_id: requestId,
+            credits_deducted: 0,
+            credits_remaining: workspace?.creditBalance ?? 0,
+            execution_time_ms: Date.now() - startMs,
+          },
+        }
+      }
+
+      // Not cached — check and deduct credits, then enqueue async
       const workspace = await prisma.workspace.findUnique({
         where: { id: request.workspaceId },
         select: { creditBalance: true },
@@ -84,47 +131,60 @@ export default async function enrichmentRoutes(app: FastifyInstance): Promise<vo
         }),
       ])
 
-      const { result, tier, cached } = await waterfallEnrich({
-        firstName: first_name,
-        lastName: last_name,
-        domain,
-        companyName: company_name,
-        workspaceId: request.workspaceId,
-      })
+      const jobId = `enrich_${requestId}`
+      await enrichmentQueue.add(
+        'person',
+        {
+          contacts: [{ firstName: first_name, lastName: last_name, domain, companyName: company_name, linkedinUrl: linkedin_url, includePhone: include_phone }],
+          workspaceId: request.workspaceId,
+          requestId,
+        },
+        { jobId },
+      )
 
-      const executionMs = Date.now() - startMs
-
-      return {
+      return reply.status(202).send({
         success: true,
         data: {
-          first_name: result.firstName ?? first_name,
-          last_name: result.lastName ?? last_name,
-          job_title: result.jobTitle,
-          email: result.email ?? null,
-          email_confidence_score: result.email ? +(result.confidence * 100).toFixed(1) : null,
-          phone: result.phone ?? null,
-          linkedin_url: result.linkedinUrl ?? null,
-          company: result.company
-            ? {
-                name: result.company.name,
-                domain: result.company.domain,
-                employee_count: result.company.employeeCount,
-                industry: result.company.industry,
-                country: result.company.country,
-                city: result.company.city,
-              }
-            : null,
-          provenance: {
-            data_source: result.dataSource,
-            waterfall_tier: tier,
-            cached,
-          },
+          job_id: jobId,
+          status: 'queued',
+          poll_url: `/api/v1/enrich/jobs/${jobId}`,
         },
         meta: {
           request_id: requestId,
-          credits_deducted: cached ? 0 : 1,
+          credits_deducted: 1,
           credits_remaining: updatedWorkspace.creditBalance,
-          execution_time_ms: executionMs,
+          execution_time_ms: Date.now() - startMs,
+        },
+      })
+    },
+  )
+
+  // GET /v1/enrich/jobs/:jobId — poll async enrichment job status
+  app.get<{ Params: { jobId: string } }>(
+    '/v1/enrich/jobs/:jobId',
+    { preHandler: apiKeyPreHandler },
+    async (request, reply) => {
+      const { jobId } = request.params
+      const job = await enrichmentQueue.getJob(jobId)
+      if (!job) {
+        return reply.status(404).send({
+          type: 'https://leadscale.io/errors/not-found',
+          title: 'Not Found',
+          status: 404,
+          detail: `Job ${jobId} not found`,
+          instance: request.url,
+        })
+      }
+      const state = await job.getState()
+      const returnValue = job.returnvalue as unknown
+      return {
+        success: true,
+        data: {
+          job_id: jobId,
+          status: state,
+          progress: job.progress,
+          result: state === 'completed' ? returnValue : null,
+          failed_reason: state === 'failed' ? job.failedReason : null,
         },
       }
     },
@@ -234,6 +294,34 @@ export default async function enrichmentRoutes(app: FastifyInstance): Promise<vo
           execution_time_ms: executionMs,
         },
       }
+    },
+  )
+
+  // GET /v1/contacts/export — download all workspace contacts as CSV
+  app.get(
+    '/v1/contacts/export',
+    { preHandler: apiKeyPreHandler },
+    async (request, reply) => {
+      const contacts = await prisma.contact.findMany({
+        include: { company: { select: { name: true, domain: true, industry: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: 10000,
+      })
+
+      const header = 'first_name,last_name,email,phone,job_title,linkedin_url,company_name,company_domain,industry,city,country,email_status'
+      const escape = (v: unknown) => {
+        const s = v == null ? '' : String(v)
+        return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s
+      }
+      const rows = contacts.map((c) =>
+        [c.firstName, c.lastName, c.email, c.phone, c.jobTitle, c.linkedinUrl,
+         c.company?.name, c.company?.domain, c.company?.industry, c.city, c.country, c.emailStatus]
+          .map(escape).join(',')
+      )
+
+      reply.header('Content-Type', 'text/csv; charset=utf-8')
+      reply.header('Content-Disposition', `attachment; filename="leads-${new Date().toISOString().slice(0,10)}.csv"`)
+      return reply.send([header, ...rows].join('\n'))
     },
   )
 }

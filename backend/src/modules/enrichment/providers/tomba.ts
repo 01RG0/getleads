@@ -1,3 +1,4 @@
+import { getBreaker } from '../../../lib/circuit-breaker.js'
 import { config } from '../../../config.js'
 import type { EnrichmentParams, EnrichmentResult } from './base.js'
 
@@ -9,12 +10,14 @@ export async function tombaEnrich(params: EnrichmentParams): Promise<EnrichmentR
     const { domain, firstName, lastName } = params
     const url = `https://api.tomba.io/v1/email-finder/${encodeURIComponent(domain)}/${encodeURIComponent(firstName)}/${encodeURIComponent(lastName)}`
 
-    const res = await fetch(url, {
-      headers: {
-        'X-Tannin-Key': tombaApiKey,
-        'Content-Type': 'application/json',
-      },
-    })
+    const res = await getBreaker('tomba', { requestTimeoutMs: 8000 }).execute(() =>
+      fetch(url, {
+        headers: {
+          'X-Tannin-Key': tombaApiKey,
+          'Content-Type': 'application/json',
+        },
+      }),
+    )
 
     if (!res.ok) return null
 

@@ -18,6 +18,21 @@ enum OrgTier {
   ENTERPRISE        @map("enterprise")
 }
 
+enum BulkJobStatus {
+  PENDING    @map("pending")
+  PROCESSING @map("processing")
+  DONE       @map("done")
+  FAILED     @map("failed")
+}
+
+enum WebhookEvent {
+  CONTACT_ENRICHED   @map("contact_enriched")
+  CONTACT_VERIFIED   @map("contact_verified")
+  JOB_COMPLETED      @map("job_completed")
+  JOB_FAILED         @map("job_failed")
+  CREDIT_LOW         @map("credit_low")
+}
+
 enum WorkspaceType {
   AGENCY_PARENT @map("agency_parent")
   CLIENT_CHILD  @map("client_child")
@@ -98,6 +113,8 @@ model Workspace {
   apiKeys             ApiKey[]
   creditLedger        CreditLedger[]
   campaigns           Campaign[]
+  webhooks            Webhook[]
+  bulkJobs            BulkJob[]
 
   @@map("workspaces")
 }
@@ -215,6 +232,9 @@ model Contact {
   phone           String?           @db.VarChar(50)
   phoneType       PhoneType         @default(UNKNOWN) @map("phone_type")
   linkedinUrl     String?           @map("linkedin_url")
+  twitterHandle   String?           @map("twitter_handle") @db.VarChar(100)
+  githubUsername  String?           @map("github_username") @db.VarChar(100)
+  icpScore        Int?              @map("icp_score")
   city            String?           @db.VarChar(100)
   country         String?           @db.VarChar(100)
   verifiedAt      DateTime?         @map("verified_at") @db.Timestamptz
@@ -224,6 +244,8 @@ model Contact {
   company         Company?          @relation(fields: [companyId], references: [id], onDelete: SetNull)
   verifications   VerificationLog[]
   campaignContacts CampaignContact[]
+  consentLogs     ConsentLog[]
+  listMemberships  ListContact[]
 
   @@map("contacts")
 }
@@ -292,4 +314,141 @@ model CampaignContact {
 
   @@unique([campaignId, contactId])
   @@map("campaign_contacts")
+}
+
+model Webhook {
+  id          String         @id @default(uuid()) @db.Uuid
+  workspaceId String         @map("workspace_id") @db.Uuid
+  url         String         @db.VarChar(2048)
+  events      WebhookEvent[]
+  secretHash  String         @map("secret_hash") @db.VarChar(255)
+  isActive    Boolean        @default(true) @map("is_active")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  deliveries  WebhookDelivery[]
+
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id            String       @id @default(uuid()) @db.Uuid
+  webhookId     String       @map("webhook_id") @db.Uuid
+  event         WebhookEvent
+  payload       Json
+  statusCode    Int?         @map("status_code")
+  responseBody  String?      @map("response_body") @db.Text
+  attemptCount  Int          @default(0) @map("attempt_count")
+  lastAttemptAt DateTime?    @map("last_attempt_at") @db.Timestamptz
+  succeededAt   DateTime?    @map("succeeded_at") @db.Timestamptz
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  webhook       Webhook      @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@map("webhook_deliveries")
+}
+
+model BulkJob {
+  id            String        @id @default(uuid()) @db.Uuid
+  workspaceId   String        @map("workspace_id") @db.Uuid
+  status        BulkJobStatus @default(PENDING)
+  totalRows     Int           @map("total_rows")
+  processedRows Int           @default(0) @map("processed_rows")
+  successRows   Int           @default(0) @map("success_rows")
+  failedRows    Int           @default(0) @map("failed_rows")
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("bulk_jobs")
+}
+
+model SuppressionList {
+  id           String   @id @default(uuid()) @db.Uuid
+  workspaceId  String   @map("workspace_id") @db.Uuid
+  email        String   @db.VarChar(255)
+  reason       String   @db.VarChar(255)
+  suppressedAt DateTime @default(now()) @map("suppressed_at") @db.Timestamptz
+
+  @@unique([workspaceId, email])
+  @@map("suppression_list")
+}
+
+model ConsentLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  contactId  String   @map("contact_id") @db.Uuid
+  action     String   @db.VarChar(100)
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@map("consent_logs")
+}
+
+model GdprPurgeJob {
+  id          String   @id @default(uuid()) @db.Uuid
+  contactId   String   @map("contact_id") @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  scheduledAt DateTime @map("scheduled_at") @db.Timestamptz
+  completedAt DateTime? @map("completed_at") @db.Timestamptz
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("gdpr_purge_jobs")
+}
+
+model SavedList {
+  id           String        @id @default(uuid()) @db.Uuid
+  workspaceId  String        @map("workspace_id") @db.Uuid
+  name         String        @db.VarChar(255)
+  description  String?       @db.Text
+  contactCount Int           @default(0) @map("contact_count")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  contacts     ListContact[]
+
+  @@map("saved_lists")
+}
+
+model ListContact {
+  id        String    @id @default(uuid()) @db.Uuid
+  listId    String    @map("list_id") @db.Uuid
+  contactId String    @map("contact_id") @db.Uuid
+  addedAt   DateTime  @default(now()) @map("added_at") @db.Timestamptz
+
+  list      SavedList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  contact   Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, contactId])
+  @@map("list_contacts")
+}
+
+model JobChangeAlert {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  contactId   String   @map("contact_id") @db.Uuid
+  oldTitle    String?  @map("old_title") @db.VarChar(255)
+  newTitle    String?  @map("new_title") @db.VarChar(255)
+  oldCompany  String?  @map("old_company") @db.VarChar(255)
+  newCompany  String?  @map("new_company") @db.VarChar(255)
+  detectedAt  DateTime @default(now()) @map("detected_at") @db.Timestamptz
+  notifiedAt  DateTime? @map("notified_at") @db.Timestamptz
+
+  @@map("job_change_alerts")
+}
+
+model ApiUsageLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  endpoint    String   @db.VarChar(255)
+  method      String   @db.VarChar(10)
+  statusCode  Int      @map("status_code")
+  latencyMs   Int      @map("latency_ms")
+  creditsUsed Int      @default(0) @map("credits_used")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("api_usage_logs")
 }

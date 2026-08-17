@@ -1,10 +1,19 @@
 import { prisma } from '../../lib/db.js'
 import { getCache, setCache } from '../../lib/redis.js'
+import { config } from '../../config.js'
 import type { EnrichmentResult } from './providers/base.js'
+import { findDuplicate, mergeContactData } from './deduplication.js'
+import { isSuppressed } from '../gdpr/service.js'
 import { enrichCompany } from './providers/firmographic.js'
-import { pdlEnrich } from './providers/pdl.js'
+import { prospeoEnrich } from './providers/prospeo.js'
+import { findymailEnrich } from './providers/findymail.js'
+import { dropcontactEnrich } from './providers/dropcontact.js'
+import { apolloEnrich } from './providers/apollo.js'
+import { hunterEnrich } from './providers/hunter.js'
 import { snovEnrich } from './providers/snov.js'
+import { pdlEnrich } from './providers/pdl.js'
 import { tombaEnrich } from './providers/tomba.js'
+import { verifyEmail } from '../verification/service.js'
 
 const CACHE_TTL = 14 * 24 * 60 * 60 // 14 days in seconds
 
@@ -13,6 +22,9 @@ export interface WaterfallParams {
   lastName: string
   domain: string
   companyName?: string
+  linkedinUrl?: string
+  includePhone?: boolean
+  forceReverify?: boolean
   workspaceId: string
 }
 
@@ -22,7 +34,7 @@ export interface WaterfallEnrichResult {
   cached: boolean
 }
 
-function cacheKey(firstName: string, lastName: string, domain: string): string {
+export function buildCacheKey(firstName: string, lastName: string, domain: string): string {
   return `enrich:${firstName.toLowerCase()}:${lastName.toLowerCase()}:${domain.toLowerCase()}`
 }
 
@@ -61,13 +73,8 @@ async function upsertContactAndCompany(
       companyId = company.id
     }
 
-    // Try to find an existing contact by email or name+company combo
-    const existingContact = result.email
-      ? await prisma.contact.findFirst({
-          where: { email: result.email },
-          select: { id: true },
-        })
-      : null
+    // GDPR suppression check — skip DB write for suppressed emails
+    if (result.email && await isSuppressed(params.workspaceId, result.email)) return
 
     const contactData = {
       firstName: result.firstName ?? params.firstName,
@@ -80,11 +87,11 @@ async function upsertContactAndCompany(
       ...(companyId && { companyId }),
     }
 
+    // Deduplicate: SHA-256 email exact match, then fuzzy name+domain
+    const existingContact = await findDuplicate(result.email, params.firstName, params.lastName, params.domain)
+
     if (existingContact) {
-      await prisma.contact.update({
-        where: { id: existingContact.id },
-        data: contactData,
-      })
+      await mergeContactData(existingContact.id, contactData)
     } else {
       await prisma.contact.create({ data: contactData })
     }
@@ -94,7 +101,13 @@ async function upsertContactAndCompany(
 }
 
 export async function waterfallEnrich(params: WaterfallParams): Promise<WaterfallEnrichResult> {
-  const key = cacheKey(params.firstName, params.lastName, params.domain)
+  const key = buildCacheKey(params.firstName, params.lastName, params.domain)
+
+  // forceReverify: bust cache before checking
+  if (params.forceReverify) {
+    const { deleteCache } = await import('../../lib/redis.js')
+    await deleteCache(key)
+  }
 
   // Tier 0: Redis cache
   const cached = await getCache<EnrichmentResult>(key)
@@ -107,17 +120,41 @@ export async function waterfallEnrich(params: WaterfallParams): Promise<Waterfal
     lastName: params.lastName,
     domain: params.domain,
     companyName: params.companyName,
+    linkedinUrl: params.linkedinUrl,
   }
 
   const providers: Array<() => Promise<EnrichmentResult | null>> = [
-    () => snovEnrich(enrichParams),   // Tier 1
-    () => pdlEnrich(enrichParams),    // Tier 2
-    () => tombaEnrich(enrichParams),  // Tier 3
+    () => prospeoEnrich(enrichParams),    // Tier 1
+    () => findymailEnrich(enrichParams),  // Tier 2
+    () => dropcontactEnrich(enrichParams), // Tier 3
+    () => apolloEnrich(enrichParams),     // Tier 4
+    () => hunterEnrich(enrichParams),     // Tier 5
+    () => snovEnrich(enrichParams),       // Tier 6
+    () => pdlEnrich(enrichParams),        // Tier 7
+    () => tombaEnrich(enrichParams),      // Tier 8
   ]
+
+  const verificationApiKeys = {
+    mailcheck: config.enrichment.mailcheckApiKey || undefined,
+    zerobounce: config.enrichment.zerobounceApiKey || undefined,
+    millionverifier: config.enrichment.millionverifierApiKey || undefined,
+    abstractapi: config.enrichment.abstractapiEmailKey || undefined,
+    neverbounce: config.enrichment.neverbouncApiKey || undefined,
+    truemailHost: config.enrichment.truemailHost || undefined,
+    truemailToken: config.enrichment.truemailToken || undefined,
+  }
 
   for (let i = 0; i < providers.length; i++) {
     const result = await providers[i]()
-    if (result) {
+    if (result?.email) {
+      // Verify before caching — skip invalid emails
+      const vResult = await verifyEmail(result.email, verificationApiKeys).catch(() => null)
+      if (vResult && vResult.status === 'INVALID') continue
+      await setCache(key, result, CACHE_TTL)
+      await upsertContactAndCompany(result, params)
+      return { result, tier: i + 1, cached: false }
+    } else if (result) {
+      // Provider returned data without email (company-only)
       await setCache(key, result, CACHE_TTL)
       await upsertContactAndCompany(result, params)
       return { result, tier: i + 1, cached: false }

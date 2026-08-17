@@ -2,6 +2,7 @@ export interface MapsResult {
   name: string
   address: string
   phone: string
+  email?: string
   website: string
   rating: number
 }
@@ -25,6 +26,7 @@ export async function googleMapsSearch(
       name: p.title ?? '',
       address: p.address ?? '',
       phone: p.phoneNumber ?? '',
+      email: p.email ?? undefined,
       website: p.website ?? '',
       rating: p.rating ?? 0,
     }))

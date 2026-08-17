@@ -36,7 +36,15 @@ function isRoleAccount(email: string): boolean {
 
 export async function verifyEmail(
   email: string,
-  apiKeys: { mailcheck?: string; zerobounce?: string },
+  apiKeys: {
+    mailcheck?: string
+    zerobounce?: string
+    millionverifier?: string
+    abstractapi?: string
+    neverbounce?: string
+    truemailHost?: string
+    truemailToken?: string
+  },
   contactId?: string,
 ): Promise<VerificationResult> {
   const cacheKey = `verify:${email.toLowerCase()}`
